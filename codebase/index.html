@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ExplainLab — Ôn tập bằng AI (Học bằng cách dạy - 2 LLMs)</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- App Header -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand-section">
+        <span class="brand-badge">EL</span>
+        <div class="brand-info">
+          <h1 class="brand-title">ExplainLab</h1>
+          <span class="brand-tagline">Track D3 · Học bằng cách dạy (Lab AI20k)</span>
+        </div>
+      </div>
+
+      <div class="header-meta-group">
+        <span class="llm-status-pill">Hệ thống 2 LLMs: Học viên &amp; Trợ giảng</span>
+        <button id="btnResetApp" class="btn-reset-app" type="button" title="Khôi phục trạng thái ban đầu">
+          Làm lại
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="app-container">
+
+    <!-- Prototype Banner -->
+    <aside class="prototype-banner" role="note">
+      <span class="prototype-tag">Demo CP2 Flow</span>
+      <span>Mô phỏng quy trình ôn tập sau bài học với 2 LLMs. Dữ liệu phản hồi là kịch bản giả lập chuẩn hóa, chưa kết nối API backend thật.</span>
+    </aside>
+
+    <!-- Stepper Navigation -->
+    <nav class="stepper-container" aria-label="Tiến trình học">
+      <div class="stepper">
+        <div class="stepper-track">
+          <div id="stepperTrackFill" class="stepper-track-fill"></div>
+        </div>
+
+        <div class="step-item active" data-step="1">
+          <div class="step-circle">1</div>
+          <span class="step-label">1. Đề tài ôn tập</span>
+        </div>
+
+        <div class="step-item" data-step="2">
+          <div class="step-circle">2</div>
+          <span class="step-label">2. Phòng dạy học (2 LLMs)</span>
+        </div>
+
+        <div class="step-item" data-step="3">
+          <div class="step-circle">3</div>
+          <span class="step-label">3. Dashboard tổng kết</span>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Screens Viewport -->
+    <section class="screens-viewport">
+
+      <!-- =========================================================
+           MÀN HÌNH 1: BÀI HỌC VÀ DANH SÁCH ĐỀ TÀI ĐỂ DẠY CHO LLM
+           ========================================================= -->
+      <article id="screen1" class="screen screen-card active">
+        
+        <div class="lesson-context-box">
+          <div class="lesson-context-title">Mục: Ôn tập bằng AI sau bài học</div>
+          <h2 class="lesson-name">Bài 4: Cơ chế sinh &amp; Tham số ngẫu nhiên trong LLM</h2>
+          <div class="lesson-doc-source">
+            <span>Tài liệu nguồn đã đọc:</span>
+            <span class="doc-pill">Slide_Bai4_LLM_Generation_Params.pdf (18 trang)</span>
+          </div>
+        </div>
+
+        <div class="agent-read-notice">
+          <strong>Thông báo từ hệ thống:</strong> LLM Học viên đã đọc toàn bộ slide bài học và tổng hợp thành 3 đề tài còn băn khoăn. Bạn hãy đóng vai người dạy để giải thích cho LLM Học viên hiểu bài nhé.
+        </div>
+
+        <h3 class="section-subheading">Danh sách đề tài LLM Học viên muốn được bạn giảng giải:</h3>
+
+        <div class="question-plan-list">
+          <div class="plan-item">
+            <span class="plan-number">1</span>
+            <div class="plan-content">
+              <div class="plan-title">Vì sao mỗi lần gửi cùng một câu hỏi, LLM lại đưa ra câu trả lời khác nhau?</div>
+              <div class="plan-goal">Mục tiêu: Dạy cho AI hiểu về phân phối xác suất và kỹ thuật lấy mẫu (Token Sampling).</div>
+            </div>
+          </div>
+
+          <div class="plan-item">
+            <span class="plan-number">2</span>
+            <div class="plan-content">
+              <div class="plan-title">Vai trò của tham số Temperature và Top-p trong việc điều khiển câu trả lời?</div>
+              <div class="plan-goal">Mục tiêu: Phân biệt cơ chế làm phẳng xác suất của Temperature và ngưỡng tích lũy của Top-p.</div>
+            </div>
+          </div>
+
+          <div class="plan-item">
+            <span class="plan-number">3</span>
+            <div class="plan-content">
+              <div class="plan-title">Khi nào nên đặt Temperature = 0 và khi nào nên tăng cao trong thực tế?</div>
+              <div class="plan-goal">Mục tiêu: Nắm vững quy tắc cấu hình cho bài toán tất định (Code/Data) so với bài toán sáng tạo.</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="text-align: right;">
+          <button id="btnStartTeaching" class="btn btn-primary" type="button">
+            Bắt đầu buổi dạy cho AI →
+          </button>
+        </div>
+      </article>
+
+      <!-- =========================================================
+           MÀN HÌNH 2: PHÒNG DẠY HỌC TƯƠNG TÁC (2 LLMs)
+           ========================================================= -->
+      <article id="screen2" class="screen screen-card">
+        
+        <!-- Room Status Bar -->
+        <div class="room-header-bar">
+          <div class="room-progress-info">
+            <span id="roomQuestionIndex" class="progress-tag">Đề tài 1/3</span>
+            <span id="roomAttemptBadge" class="attempt-badge">Lượt thử: 0/3</span>
+          </div>
+
+          <div class="llm-participants">
+            <span>Tham gia:</span>
+            <span class="participant-tag active">LLM Học viên</span>
+            <span class="participant-tag">LLM Trợ giảng (Chờ hỗ trợ)</span>
+          </div>
+        </div>
+
+        <!-- Chat Stream -->
+        <div id="chatStream" class="chat-stream-container" role="log" aria-live="polite">
+          <!-- Tin nhắn render qua JS -->
+        </div>
+
+        <!-- Quick Simulation Bar (Dành cho việc kiểm thử 4 nhánh nghiệp vụ) -->
+        <div class="simulation-bar">
+          <span class="sim-label">Công cụ giả lập phản hồi nhanh:</span>
+          <div class="sim-buttons">
+            <button id="btnSimSufficient" class="btn-sim" type="button" title="Giả lập học viên giải thích Đầy đủ ý">
+              Thử trả lời: Đủ ý
+            </button>
+            <button id="btnSimPartial" class="btn-sim" type="button" title="Giả lập học viên giải thích Thiếu ý (AI sẽ hỏi gợi ý)">
+              Thử trả lời: Thiếu ý
+            </button>
+            <button id="btnSimIncorrect" class="btn-sim" type="button" title="Giả lập học viên giải thích Sai (AI sẽ chỉ ra chỗ sai)">
+              Thử trả lời: Sai
+            </button>
+            <button id="btnSimTA" class="btn-sim sim-ta" type="button" title="Giả lập sai 3 lần liên tiếp để gọi Trợ giảng AI giảng giải">
+              Sai 3 lần → Gọi Trợ giảng
+            </button>
+          </div>
+        </div>
+
+        <!-- Input Box -->
+        <div class="room-input-container">
+          <textarea
+            id="roomTextarea"
+            class="room-textarea"
+            placeholder="Nhập lời giảng của bạn cho LLM Học viên tại đây... (Hoặc bấm các nút giả lập nhanh ở trên để kiểm thử luồng)."
+            rows="3"
+          ></textarea>
+
+          <div class="room-input-footer">
+            <span id="charCount" class="char-counter">0 ký tự</span>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span id="inlineError" class="inline-error">Vui lòng nhập lời giải thích trước khi gửi.</span>
+              <button id="btnSubmitAnswer" class="btn btn-primary" type="button">
+                Gửi lời giải thích
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Next Step Action Card (Dành thời gian đọc phản hồi, bấm để chủ động chuyển tiếp) -->
+        <div id="nextActionCard" class="next-action-card">
+          <div class="next-action-info">
+            <span id="nextActionTitle" class="next-action-title">Học viên AI đã hiểu đề tài này!</span>
+            <span id="nextActionDesc" class="next-action-desc">Bạn hãy dành thời gian đọc kỹ phản hồi ở trên. Khi đã sẵn sàng, bấm nút để chuyển sang phần tiếp theo.</span>
+          </div>
+          <button id="btnProceedNext" class="btn btn-primary" type="button">
+            Chuyển sang đề tài tiếp theo →
+          </button>
+        </div>
+
+      </article>
+
+      <!-- =========================================================
+           MÀN HÌNH 3: DASHBOARD TỔNG KẾT
+           ========================================================= -->
+      <article id="screen3" class="screen screen-card">
+
+        <!-- Scorecard Overview -->
+        <div class="dashboard-scorecard">
+          <div class="scorecard-metric">
+            <span id="metricMastery" class="metric-big">85%</span>
+            <span id="metricDetail" class="metric-sub">(2/3 đề tài đạt yêu cầu)</span>
+          </div>
+
+          <div class="scorecard-headline">
+            <div class="scorecard-title">Kết quả buổi học bằng cách dạy</div>
+            <div class="scorecard-desc">Báo cáo đánh giá mức độ hiểu sâu kiến thức dựa trên khả năng giảng giải lại cho AI.</div>
+          </div>
+        </div>
+
+        <!-- 3 Specific Report Sections -->
+        <div class="dashboard-sections-grid">
+          
+          <!-- 1. Giải thích được những gì -->
+          <section class="dashboard-card card-success">
+            <h3 class="card-title">Những gì bạn đã giải thích tốt</h3>
+            <ul id="listMastered" class="dash-list">
+              <!-- Rendered via JS -->
+            </ul>
+          </section>
+
+          <!-- 2. Còn chưa được những gì -->
+          <section class="dashboard-card card-warning">
+            <h3 class="card-title">Những phần còn chưa đạt / cần lưu ý</h3>
+            <ul id="listNeedReview" class="dash-list">
+              <!-- Rendered via JS -->
+            </ul>
+          </section>
+
+          <!-- 3. Cần ôn tập lại gì -->
+          <section class="dashboard-card card-action">
+            <h3 class="card-title">Khuyến nghị ôn tập cụ thể từ Slide bài học</h3>
+            <ul id="listRecommendations" class="dash-list">
+              <!-- Rendered via JS -->
+            </ul>
+          </section>
+
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <button id="btnRestartSession" class="btn btn-primary" type="button">
+            Ôn tập lại từ đầu
+          </button>
+          <span style="font-size: 0.8rem; color: var(--slate-500);">Dữ liệu ôn tập đã được lưu vào nhật ký học tập</span>
+        </div>
+
+      </article>
+
+    </section>
+  </main>
+
+  <!-- App Footer -->
+  <footer class="app-footer">
+    <p>
+      ExplainLab — Track D3: Học bằng cách dạy (2 LLMs Architecture) · Lab AI20k
+      <br>
+      Phiên bản Prototype CP2 · Clean Slate Minimalist · Không sử dụng API Key
+    </p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
