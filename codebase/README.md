@@ -20,13 +20,14 @@ Sau khi học xong mỗi bài trên VLearn, người học mở mục **“Ôn t
 [Màn hình 2: Phòng dạy học tương tác (2 LLMs)]
   • LLM Học viên hỏi từng câu theo từng lượt
   • Người học nhập lời giải thích hoặc chọn nút giả lập
+  • Hệ thống có khoảng dừng tự nhiên ("Học viên AI đang đọc và đối chiếu slide...")
   • LLM Học viên chấm độ hoàn thiện theo 4 nhánh:
-      1. Đủ ý: Ghi nhận hiểu bài, chuyển sang câu hỏi tiếp theo.
-      2. Thiếu ý: Hỏi thêm gợi ý để dẫn dắt học viên đến câu trả lời đúng.
-      3. Sai kiến thức: Chỉ ra chỗ sai và hỏi lại học viên.
-      4. Sai lặp lại 3 lần: LLM Trợ giảng xuất hiện, giảng giải ngắn gọn dựa trên Slide nguồn.
+      1. Đủ ý: Ghi nhận hiểu bài, dừng lại để người học đọc phản hồi, hiển thị nút "Chuyển sang Đề tài tiếp theo →".
+      2. Thiếu ý: Hỏi thêm gợi ý để dẫn dắt học viên đến câu trả lời đúng (người học tiếp tục giải thích bổ sung).
+      3. Sai kiến thức: Chỉ ra chỗ sai và hỏi lại học viên (người học tiếp tục sửa lại).
+      4. Sai lặp lại 3 lần: LLM Trợ giảng xuất hiện, giảng giải ngắn gọn dựa trên Slide nguồn, dừng lại để người học đọc kỹ bài giảng trước khi bấm chuyển tiếp.
         │
-        ▼ (Sau khi hoàn thành các câu hỏi)
+        ▼ (Người học chủ động bấm chuyển câu sau khi đã đọc xong)
 [Màn hình 3: Dashboard tổng kết]
   • Giải thích được những gì (Điểm mạnh đã đạt chuẩn)
   • Còn chưa được những gì (Điểm còn lúng túng hoặc cần can thiệp)
