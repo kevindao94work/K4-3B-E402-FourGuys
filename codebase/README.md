@@ -1,113 +1,84 @@
 # ExplainLab — Prototype Giao Diện CP2 (Lab AI20k)
 
 > **Track D3: Học bằng cách dạy (Learning by Teaching)**  
-> Giai đoạn: **CheckPoint 2 (CP2)** — Chứng minh luồng trải nghiệm (End-to-End User Flow).  
-> **Lưu ý quan trọng:** Toàn bộ phản hồi trong phiên bản này là **dữ liệu mock cố định**, phục vụ kiểm thử tương tác và demo giao diện, chưa kết nối backend và không sử dụng API key.
+> **Kiến trúc:** Hệ thống 2 LLMs — **1 LLM Học viên** & **1 LLM Trợ giảng**  
+> **Mục đích:** Chứng minh luồng trải nghiệm người học dạy lại bài cho AI sau khi hoàn thành buổi học trên VLearn.  
+> **Lưu ý:** Toàn bộ phản hồi hiện tại là kịch bản giả lập chuẩn hóa (mock data), không sử dụng API key và chưa kết nối backend AI thật.
 
 ---
 
-## 1. Giới thiệu sản phẩm
+## 1. Bối cảnh & Luồng nghiệp vụ (Flow 2 LLMs)
 
-**ExplainLab** là công cụ hỗ trợ người học ôn tập khái niệm bằng phương pháp *học bằng cách dạy*:
-- Người học tự diễn giải lại kiến thức bằng lời văn của chính mình như đang giảng bài cho một người mới.
-- Hệ thống lắng nghe, phân tích và phản hồi:
-  1. **Bạn đã làm tốt:** Ghi nhận những điểm đúng đã diễn giải được.
-  2. **Có thể bổ sung:** Chỉ ra cụ thể các lỗ hổng kiến thức hoặc phần giải thích còn mơ hồ.
-  3. **Câu hỏi để bạn tự sửa:** Đưa ra câu hỏi gợi mở để người học tự tư duy và bổ sung lại bài giảng.
-
----
-
-## 2. Phong cách thiết kế giao diện (UI Theme)
-
-- **Phong cách:** Clean Slate Minimalist (lấy cảm hứng từ hệ thống thiết kế Shadcn UI & Linear).
-- **Màu sắc:** 100% màu phẳng (flat colors), không sử dụng gradient. Sử dụng hệ màu Slate trung tính (`#0f172a`, `#475569`, `#f8fafc`) kết hợp các trạng thái cảnh báo và thành công nhẹ nhàng (subtle borders & backgrounds).
-- **Typography & Biểu tượng:** Tối giản biểu tượng thừa, tập trung vào tính rõ ràng, độ tương phản cao, phù hợp với môi trường giáo dục và doanh nghiệp nghiêm túc.
-
----
-
-## 3. Luồng trải nghiệm (End-to-End Flow)
-
-Ứng dụng chạy mượt mà trên cùng một trang (Single Page Interactive Flow, không cần router):
+Sau khi học xong mỗi bài trên VLearn, người học mở mục **“Ôn tập bằng AI”**:
 
 ```
-[Màn hình 1: Chọn chủ đề]
-      │
-      ▼ (Bấm "Bắt đầu giải thích →")
-[Màn hình 2: Viết phần giải thích]
-      │
-      ▼ (Kiểm tra nhập liệu & Bấm "Gửi phần giải thích")
-[Màn hình 3: Phản hồi & Đánh giá]
-      │
-      ├── (Bấm "Sửa phần giải thích") ──> Quay lại Màn hình 2 (giữ nguyên bài cũ)
-      └── (Bấm "Đổi chủ đề") ─────────> Quay lại Màn hình 1 (chọn lại)
+[Màn hình 1: Đề tài ôn tập]
+  • LLM Học viên đọc slide bài vừa học (Slide_Bai4_LLM_Generation.pdf)
+  • Tạo danh sách 3 đề tài cần người học giảng dạy lại
+        │
+        ▼ (Bấm "Bắt đầu buổi dạy cho AI →")
+[Màn hình 2: Phòng dạy học tương tác (2 LLMs)]
+  • LLM Học viên hỏi từng câu theo từng lượt
+  • Người học nhập lời giải thích hoặc chọn nút giả lập
+  • LLM Học viên chấm độ hoàn thiện theo 4 nhánh:
+      1. Đủ ý: Ghi nhận hiểu bài, chuyển sang câu hỏi tiếp theo.
+      2. Thiếu ý: Hỏi thêm gợi ý để dẫn dắt học viên đến câu trả lời đúng.
+      3. Sai kiến thức: Chỉ ra chỗ sai và hỏi lại học viên.
+      4. Sai lặp lại 3 lần: LLM Trợ giảng xuất hiện, giảng giải ngắn gọn dựa trên Slide nguồn.
+        │
+        ▼ (Sau khi hoàn thành các câu hỏi)
+[Màn hình 3: Dashboard tổng kết]
+  • Giải thích được những gì (Điểm mạnh đã đạt chuẩn)
+  • Còn chưa được những gì (Điểm còn lúng túng hoặc cần can thiệp)
+  • Cần ôn tập lại gì (Khuyến nghị số trang slide và khái niệm cần đọc lại)
 ```
 
-1. **Màn hình 1 — Chọn chủ đề:**
-   - Tiêu đề: *“Học bằng cách giải thích lại”*.
-   - Mô tả ngắn: *“Hãy thử dạy lại một khái niệm bằng lời của bạn để phát hiện phần mình chưa hiểu.”*
-   - 3 chủ đề mẫu: **ReAct**, **Prompt Engineering**, **RAG**.
-   - Nút `Bắt đầu giải thích →` chuyển sang Màn hình 2.
+---
 
-2. **Màn hình 2 — Viết phần giải thích:**
-   - Hiển thị chủ đề đang chọn kèm câu hướng dẫn: *“Hãy giải thích khái niệm này như đang dạy cho một người mới học.”*
-   - Ô nhập văn bản rộng rãi, bộ đếm ký tự thời gian thực.
-   - Gợi ý mở đầu: *“Khái niệm này dùng để…”* kèm nút chèn nhanh gợi ý.
-   - Hỗ trợ demo nhanh: Điền đoạn văn bản mẫu hoặc xóa trắng.
-   - **Xử lý lỗi thân thiện:** Nếu bấm gửi khi ô nhập rỗng, hệ thống hiển thị thông báo lỗi inline trong giao diện (không dùng popup `alert()` của trình duyệt).
-   - Nút `Gửi phần giải thích` chuyển sang Màn hình 3.
+## 2. Các công cụ hỗ trợ kiểm thử nhanh (Quick Simulation)
 
-3. **Màn hình 3 — Phản hồi & Đánh giá:**
-   - Hiển thị điểm số dạng số thực tế (ví dụ: `72 / 100`).
-   - Badge trạng thái trực quan: `Còn một vài lỗ hổng — hãy thử giải thích lại`.
-   - Ba khu vực cốt lõi:
-     - **Bạn đã làm tốt:** 2 ý đúng cụ thể.
-     - **Có thể bổ sung:** 2 lỗ hổng kiến thức cần lấp đầy.
-     - **Câu hỏi để bạn tự sửa:** Câu hỏi mở kích thích tư duy.
-   - Khung xem lại bài giải thích đã gửi.
-   - Nút `Sửa phần giải thích`: Quay lại màn hình 2 và giữ nguyên nội dung cũ để tiếp tục hoàn thiện.
-   - Nút `Đổi chủ đề`: Quay lại màn hình 1.
+Tại **Màn hình 2 (Phòng dạy học)**, có sẵn 4 nút giả lập nhanh để người chấm/giám khảo kiểm thử ngay lập tức cả 4 kịch bản mà không cần tự gõ tay:
+
+| Nút bấm | Hành vi kiểm thử |
+|---|---|
+| **Thử trả lời: Đủ ý** | Người học giải thích chuẩn xác phân phối xác suất và sampling $\rightarrow$ LLM Học viên xác nhận đã hiểu và chuyển câu tiếp theo. |
+| **Thử trả lời: Thiếu ý** | Người học trả lời còn chung chung $\rightarrow$ LLM Học viên đặt câu hỏi gợi mở để học viên bổ sung. |
+| **Thử trả lời: Sai** | Người học trả lời sai bản chất $\rightarrow$ LLM Học viên đối chiếu slide và chỉ ra chỗ sai, yêu cầu giải thích lại. |
+| **Sai 3 lần $\rightarrow$ Gọi Trợ giảng** | Giả lập sai liên tiếp 3 lần $\rightarrow$ **LLM Trợ giảng** xuất hiện, tóm lược kiến thức cốt lõi từ Slide nguồn để gỡ rối cho học viên. |
 
 ---
 
-## 4. Bộ chọn kịch bản Demo (Demo Scenario Switcher)
+## 3. Phong cách thiết kế (Clean Slate Minimalist)
 
-Tại góc trên bên phải thanh điều hướng, người kiểm thử có thể chuyển đổi giữa **3 tình huống demo**:
-
-| Tình huống | Điểm số | Trạng thái hiển thị | Mục đích kiểm thử |
-|---|:---:|---|---|
-| **Có lỗ hổng kiến thức** *(mặc định)* | `72 / 100` | *Còn một vài lỗ hổng — hãy thử giải thích lại* | Đánh giá phản hồi chỉ ra 2 ý đúng, 2 lỗ hổng và 1 câu hỏi dẫn dắt người học tự sửa. |
-| **Phản hồi tích cực** | `92 - 96 / 100` | *Giải thích rất tốt — Đầy đủ & rõ ràng* | Xác nhận học viên đã giải thích khá đầy đủ, gợi ý mở rộng thêm kỹ năng nâng cao. |
-| **Không đủ thông tin** | `30 - 35 / 100` | *Chưa đủ thông tin — Cần bổ sung chi tiết* | Thông báo "Chưa thể đánh giá chắc chắn", yêu cầu bổ sung định nghĩa hoặc ví dụ cụ thể. |
+- **Chuẩn phong cách:** Lấy cảm hứng từ Shadcn UI và Linear Design System.
+- **Màu sắc:** 100% màu phẳng (Flat colors), không sử dụng gradient, không bóng đổ lòe loẹt.
+- **Biểu tượng:** Không dùng icon hoạt hình/emoji rườm rà; sử dụng typography rõ nét, badge phân cấp trạng thái tinh tế.
+- **Trải nghiệm:** Responsive trên cả điện thoại và máy tính, không reload trang, không dùng `alert()` trình duyệt.
 
 ---
 
-## 5. Cấu trúc thư mục
+## 4. Cấu trúc thư mục
 
 ```
 codebase/
-├── index.html     # Cấu trúc giao diện HTML5 ngữ nghĩa, gồm 3 màn hình và thanh tiến trình
-├── style.css      # Toàn bộ định dạng giao diện, phong cách Clean Slate phẳng, responsive
-├── app.js         # Logic điều hướng bước, quản lý dữ liệu mock, validation và tương tác
-└── README.md      # Tài liệu hướng dẫn sử dụng và kiểm thử prototype
+├── index.html     # Giao diện ngữ nghĩa: Đề tài ôn tập, Phòng dạy học tương tác & Dashboard
+├── style.css      # Hệ màu Slate phẳng, bố cục chat stream và scorecard hiện đại
+├── app.js         # Logic hội thoại 2 LLMs, bộ đếm lượt thử, phân nhánh 4 trường hợp, dashboard
+└── README.md      # Tài liệu hướng dẫn luồng nghiệp vụ và cách chạy
 ```
-
-- **Công nghệ sử dụng:** HTML5, CSS3, Pure JavaScript (ES6+).
-- **Không có phụ thuộc (Zero-dependency):** Không cần cài đặt `npm`, `node_modules` hay bất kỳ thư viện bên thứ ba nào.
 
 ---
 
-## 6. Hướng dẫn chạy ứng dụng
+## 5. Hướng dẫn chạy ứng dụng
 
-### Chạy bằng Python (Khuyến nghị)
-Mở terminal tại thư mục gốc của repository và chạy lệnh:
+Chạy lệnh sau tại thư mục gốc của repository:
 
 ```bash
 python3 -m http.server 4173 --directory codebase
 ```
 
-Sau đó mở trình duyệt và truy cập:
+Mở trình duyệt tại:
 ```
 http://localhost:4173
 ```
-
-*(Hoặc mở trực tiếp file `codebase/index.html` bằng bất kỳ trình duyệt hiện đại nào).*
+*(Hoặc mở trực tiếp file `codebase/index.html` trên trình duyệt).*
