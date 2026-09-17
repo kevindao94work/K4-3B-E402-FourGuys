@@ -8,10 +8,10 @@
 
 | Họ và Tên | Mã Học Viên | Vai trò chính | Phần việc đảm nhiệm trong dự án |
 |---|---|---|---|
-|  |  |  |  |
-|  |  |  |  |
-|  |  |  |  |
-|  |  |  |  |
+| Đỗ Trọng Bình | 2A202602855 |  |  |
+| Nguyễn Văn Thăng | 2A202602835 |  |  |
+| Đoàn Quang Thanh | 2A202602841 |  |  |
+| Đào Gia Bảo | 2A202602793 | Đội trưởng |  |
 
 > Nhóm copy nguyên file README này về repo của mình, rồi điền bảng trên. Cột **Phần việc đảm nhiệm** ghi càng cụ thể càng tốt.
 
