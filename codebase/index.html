@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ExplainLab — Học bằng cách giải thích lại (Track D3 Prototype)</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand-section">
+        <span class="brand-badge">EL</span>
+        <div class="brand-info">
+          <h1 class="brand-title">ExplainLab</h1>
+          <span class="brand-tagline">Track D3 · Học bằng cách dạy (Lab AI20k)</span>
+        </div>
+      </div>
+
+      <!-- Demo Scenario Controls -->
+      <div class="demo-controls">
+        <div class="scenario-picker-wrapper">
+          <label for="scenarioSelect" class="scenario-label">Tình huống demo:</label>
+          <select id="scenarioSelect" class="scenario-select" title="Chọn tình huống để kiểm thử phản hồi">
+            <option value="gap" selected>Có lỗ hổng kiến thức</option>
+            <option value="positive">Phản hồi tích cực</option>
+            <option value="insufficient">Không đủ thông tin</option>
+          </select>
+        </div>
+
+        <button id="btnResetApp" class="btn-reset-app" type="button" title="Khôi phục trạng thái ban đầu">
+          Làm lại
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="app-container">
+
+    <!-- Prototype Disclaimer -->
+    <aside class="prototype-banner" role="note">
+      <span class="prototype-tag">Demo CP2</span>
+      <span>Phiên bản thử nghiệm quy trình tương tác. Các phản hồi hiện là dữ liệu mẫu giả lập, chưa kết nối AI thật và không dùng API key.</span>
+    </aside>
+
+    <!-- Stepper Progress Bar -->
+    <nav class="stepper-container" aria-label="Tiến trình học tập">
+      <div class="stepper">
+        <div class="stepper-track">
+          <div id="stepperTrackFill" class="stepper-track-fill"></div>
+        </div>
+
+        <div class="step-item active" data-step="1">
+          <div class="step-circle">1</div>
+          <span class="step-label">Chọn chủ đề</span>
+        </div>
+
+        <div class="step-item" data-step="2">
+          <div class="step-circle">2</div>
+          <span class="step-label">Viết giải thích</span>
+        </div>
+
+        <div class="step-item" data-step="3">
+          <div class="step-circle">3</div>
+          <span class="step-label">Nhận phản hồi</span>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Viewport 3 Screens -->
+    <section class="screens-viewport">
+
+      <!-- =========================================================
+           MÀN HÌNH 1: CHỌN CHỦ ĐỀ
+           ========================================================= -->
+      <article id="screen1" class="screen screen-card active">
+        <div class="screen-header">
+          <div class="screen-step-hint">Bước 1 trên 3</div>
+          <h2 class="screen-title">Học bằng cách giải thích lại</h2>
+          <p class="screen-description">
+            Hãy thử dạy lại một khái niệm bằng lời của bạn để phát hiện phần mình chưa hiểu.
+          </p>
+        </div>
+
+        <div class="topics-grid" role="radiogroup" aria-label="Danh sách chủ đề ôn tập">
+          
+          <!-- Topic: ReAct -->
+          <div class="topic-card selected" data-topic="react" role="radio" aria-checked="true" tabindex="0">
+            <div class="topic-meta-top">
+              <span class="topic-category-tag">Agent Architecture</span>
+              <div class="topic-radio-indicator">
+                <div class="topic-radio-dot"></div>
+              </div>
+            </div>
+            <h3 class="topic-name">ReAct</h3>
+            <div class="topic-subtitle">Reasoning & Acting trong LLM</div>
+            <p class="topic-desc">
+              Khung kết hợp giữa suy luận logic từng bước (Thought) và gọi công cụ bên ngoài (Action) để đưa ra câu trả lời chính xác.
+            </p>
+            <div class="topic-level-badge">Độ khó: Trung bình</div>
+          </div>
+
+          <!-- Topic: Prompt Engineering -->
+          <div class="topic-card" data-topic="prompt-engineering" role="radio" aria-checked="false" tabindex="0">
+            <div class="topic-meta-top">
+              <span class="topic-category-tag">Prompt Design</span>
+              <div class="topic-radio-indicator">
+                <div class="topic-radio-dot"></div>
+              </div>
+            </div>
+            <h3 class="topic-name">Prompt Engineering</h3>
+            <div class="topic-subtitle">Kỹ thuật thiết kế câu lệnh tối ưu</div>
+            <p class="topic-desc">
+              Phương pháp thiết kế cấu trúc prompt, vai trò và ngữ cảnh nhằm hướng dẫn mô hình AI phản hồi đúng mục tiêu và định dạng.
+            </p>
+            <div class="topic-level-badge">Độ khó: Cơ bản</div>
+          </div>
+
+          <!-- Topic: RAG -->
+          <div class="topic-card" data-topic="rag" role="radio" aria-checked="false" tabindex="0">
+            <div class="topic-meta-top">
+              <span class="topic-category-tag">Retrieval & Generation</span>
+              <div class="topic-radio-indicator">
+                <div class="topic-radio-dot"></div>
+              </div>
+            </div>
+            <h3 class="topic-name">RAG</h3>
+            <div class="topic-subtitle">Retrieval-Augmented Generation</div>
+            <p class="topic-desc">
+              Mô hình kết hợp tra cứu dữ liệu từ nguồn tài liệu bên ngoài (Vector DB) rồi đưa vào ngữ cảnh để AI tạo sinh câu trả lời có trích dẫn.
+            </p>
+            <div class="topic-level-badge">Độ khó: Trung bình</div>
+          </div>
+
+        </div>
+
+        <div style="text-align: right;">
+          <button id="btnStartExplain" class="btn btn-primary" type="button">
+            Bắt đầu giải thích →
+          </button>
+        </div>
+      </article>
+
+      <!-- =========================================================
+           MÀN HÌNH 2: VIẾT PHẦN GIẢI THÍCH
+           ========================================================= -->
+      <article id="screen2" class="screen screen-card">
+        
+        <!-- Current Topic Status -->
+        <div class="current-topic-bar">
+          <div>
+            <div class="topic-label-meta">Chủ đề được chọn</div>
+            <div id="topicBadgeTitle" class="topic-current-title">ReAct</div>
+          </div>
+          <span id="topicBadgeTag" class="topic-category-tag">Agent Architecture</span>
+        </div>
+
+        <!-- Instruction & Starter Hint -->
+        <div class="instruction-block">
+          <h2 class="instruction-heading">Hãy giải thích khái niệm này như đang dạy cho một người mới học.</h2>
+          
+          <div class="starter-hint-box">
+            <div class="starter-hint-text">
+              <strong>Gợi ý mở đầu:</strong> <span id="starterHintText">Khái niệm này dùng để…</span>
+            </div>
+            <button id="btnUseHint" class="btn btn-subtle" type="button">
+              Chèn câu gợi ý
+            </button>
+          </div>
+        </div>
+
+        <!-- Demo Quick Actions -->
+        <div class="demo-helpers-bar">
+          <span class="helpers-label">Hỗ trợ thử nghiệm nhanh:</span>
+          <button id="btnFillSample" class="btn btn-subtle" type="button" title="Điền đoạn văn bản mẫu ứng với kịch bản">
+            Điền mẫu thử nghiệm
+          </button>
+          <button id="btnClearText" class="btn btn-subtle" type="button" title="Xóa nội dung đang nhập">
+            Xóa trắng
+          </button>
+        </div>
+
+        <!-- Textarea -->
+        <div class="textarea-wrapper">
+          <textarea
+            id="explanationTextarea"
+            class="explanation-textarea"
+            placeholder="Nhập phần giải thích của bạn tại đây... Hãy diễn đạt tự nhiên theo cách bạn hiểu để hệ thống phát hiện chỗ bạn còn vướng."
+            rows="8"
+          ></textarea>
+        </div>
+
+        <div class="textarea-footer">
+          <span>Trình bày rõ ràng giúp hệ thống đối chiếu chính xác các ý cốt lõi.</span>
+          <span id="charCount" class="char-counter">0 ký tự</span>
+        </div>
+
+        <!-- Inline Error Alert -->
+        <div id="inlineAlert" class="inline-alert" role="alert">
+          <span id="inlineAlertMsg">Vui lòng nhập phần giải thích của bạn trước khi gửi để nhận phản hồi.</span>
+        </div>
+
+        <!-- Action Row -->
+        <div class="screen-actions-between">
+          <button id="btnBackToTopic" class="btn btn-secondary" type="button">
+            ← Đổi chủ đề
+          </button>
+          <button id="btnSubmitExplain" class="btn btn-primary" type="button">
+            Gửi phần giải thích
+          </button>
+        </div>
+      </article>
+
+      <!-- =========================================================
+           MÀN HÌNH 3: PHẢN HỒI
+           ========================================================= -->
+      <article id="screen3" class="screen screen-card">
+
+        <!-- Result Overview Header Panel -->
+        <div class="feedback-summary-panel">
+          <div class="feedback-score-box">
+            <span id="feedbackScoreNum" class="score-value">72</span>
+            <span class="score-max">/ 100</span>
+          </div>
+
+          <div class="feedback-headline-group">
+            <span id="feedbackTopicLabel" class="topic-label-meta">Chủ đề: ReAct</span>
+            <div id="feedbackStatusBadge" class="status-badge status-gap">
+              Còn một vài lỗ hổng — hãy thử giải thích lại
+            </div>
+            <p id="feedbackSummary" class="feedback-summary-text">
+              Bạn đã nắm được ý tưởng cốt lõi, nhưng phần giải thích vẫn còn thiếu các cơ chế vận hành quan trọng.
+            </p>
+          </div>
+        </div>
+
+        <!-- 3 Specific Feedback Sections -->
+        <div class="feedback-sections">
+          
+          <!-- Area 1: Bạn đã làm tốt -->
+          <section class="feedback-card card-good">
+            <h3 class="feedback-section-title">Bạn đã làm tốt</h3>
+            <ul id="listGoodPoints" class="feedback-list">
+              <!-- Rendered via JS -->
+            </ul>
+          </section>
+
+          <!-- Area 2: Có thể bổ sung -->
+          <section class="feedback-card card-gap">
+            <h3 class="feedback-section-title">Có thể bổ sung</h3>
+            <ul id="listGapPoints" class="feedback-list">
+              <!-- Rendered via JS -->
+            </ul>
+          </section>
+
+          <!-- Area 3: Câu hỏi để bạn tự sửa -->
+          <section class="feedback-card card-question">
+            <h3 class="feedback-section-title">Câu hỏi để bạn tự sửa</h3>
+            <p id="questionBoxText" class="question-text-block">
+              Khi mô hình thực hiện một hành động (Action) như tra cứu Google, kết quả tìm được sẽ được đưa trở lại mô hình như thế nào để đưa ra câu trả lời cuối cùng?
+            </p>
+          </section>
+
+        </div>
+
+        <!-- Review User's Submitted Text -->
+        <div class="submission-review-box">
+          <button id="btnReviewToggle" class="submission-review-toggle" type="button">
+            <span>Xem lại bài giải thích đã gửi</span>
+            <span id="reviewToggleIcon">▼</span>
+          </button>
+          <div id="reviewContent" class="submission-review-content"></div>
+        </div>
+
+        <!-- Screen 3 Actions -->
+        <div class="screen-actions-between">
+          <button id="btnChangeTopic" class="btn btn-secondary" type="button">
+            Đổi chủ đề
+          </button>
+          <button id="btnEditExplain" class="btn btn-primary" type="button">
+            Sửa phần giải thích
+          </button>
+        </div>
+
+      </article>
+
+    </section>
+  </main>
+
+  <!-- Loading Simulation Modal -->
+  <div id="loadingOverlay" class="loading-overlay" aria-hidden="true">
+    <div class="loading-card">
+      <div class="spinner"></div>
+      <div class="loading-title">Đang phân tích phần giải thích</div>
+      <div class="loading-subtitle">Đối chiếu kiến thức theo kịch bản demo CP2</div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <p>
+      ExplainLab — Track D3: Học bằng cách dạy · Lab AI20k
+      <br>
+      Phiên bản Prototype CP2 · Dữ liệu giả lập chuẩn hóa · Giao diện tối giản
+    </p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
