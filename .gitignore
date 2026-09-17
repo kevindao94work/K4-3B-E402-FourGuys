@@ -1,0 +1,36 @@
+# Private data — keep local, never commit
+data/
+datasets/
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+!.env.template
+
+# Python environments and caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+
+# Dependencies and build output
+node_modules/
+dist/
+build/
+.next/
+coverage/
+
+# Local logs and notebook checkpoints
+*.log
+.ipynb_checkpoints/
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
