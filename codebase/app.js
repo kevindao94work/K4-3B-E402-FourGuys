@@ -22,7 +22,6 @@ const LESSON_DATA = {
       learningGoal: "Giải thích được cơ chế sinh từ theo phân phối xác suất và quá trình lấy mẫu (Sampling) thay vì trả lời tất định.",
       slideRef: "Slide 6 — Probability Distribution & Token Sampling",
       
-      // Kịch bản mẫu cho nút demo và phân tích
       scenarios: {
         sufficient: {
           userAnswer: "Mô hình ngôn ngữ không trả lời cố định mà tính toán phân phối xác suất cho từng token tiếp theo. Khi sinh văn bản, thuật toán lấy mẫu (sampling) sẽ chọn từ dựa trên xác suất đó, nên cùng một prompt vẫn có thể ra các chuỗi từ khác nhau qua mỗi lần chạy.",
@@ -129,7 +128,8 @@ const state = {
   currentQuestionIndex: 0,
   attemptCount: 0, // 0 -> 3
   chatHistory: [], // { sender: 'student'|'user'|'ta', text: '', statusTag: '', statusType: '' }
-  questionResults: [] // { questionId, attempts, mastered: boolean, notes: [] }
+  questionResults: [], // { questionId, attempts, mastered: boolean, note: string }
+  isEvaluating: false
 };
 
 // ==========================================
@@ -159,14 +159,23 @@ function initDom() {
     roomQuestionIndex: document.getElementById("roomQuestionIndex"),
     roomAttemptBadge: document.getElementById("roomAttemptBadge"),
     chatStream: document.getElementById("chatStream"),
+    simulationBar: document.querySelector(".simulation-bar"),
+    roomInputContainer: document.querySelector(".room-input-container"),
     roomTextarea: document.getElementById("roomTextarea"),
     charCount: document.getElementById("charCount"),
     inlineError: document.getElementById("inlineError"),
     btnSubmitAnswer: document.getElementById("btnSubmitAnswer"),
+    simButtons: document.querySelectorAll(".btn-sim"),
     btnSimSufficient: document.getElementById("btnSimSufficient"),
     btnSimPartial: document.getElementById("btnSimPartial"),
     btnSimIncorrect: document.getElementById("btnSimIncorrect"),
     btnSimTA: document.getElementById("btnSimTA"),
+
+    // Next Step Action Card (Controlled Pause)
+    nextActionCard: document.getElementById("nextActionCard"),
+    nextActionTitle: document.getElementById("nextActionTitle"),
+    nextActionDesc: document.getElementById("nextActionDesc"),
+    btnProceedNext: document.getElementById("btnProceedNext"),
 
     // Screen 3 Dashboard
     metricMastery: document.getElementById("metricMastery"),
@@ -220,12 +229,19 @@ function setupTeachingRoom() {
   const currentQ = LESSON_DATA.questions[state.currentQuestionIndex];
   state.attemptCount = 0;
   state.chatHistory = [];
+  state.isEvaluating = false;
 
   updateRoomHeader();
   dom.chatStream.innerHTML = "";
   dom.roomTextarea.value = "";
   updateCharCounter();
   hideError();
+
+  // Reset hiển thị khung nhập liệu và ẩn thanh chuyển tiếp
+  if (dom.nextActionCard) dom.nextActionCard.classList.remove("visible");
+  if (dom.roomInputContainer) dom.roomInputContainer.style.display = "flex";
+  if (dom.simulationBar) dom.simulationBar.style.display = "flex";
+  setInputsDisabled(false);
 
   // Tin nhắn mở đầu của LLM Học viên
   addChatMessage({
@@ -291,8 +307,63 @@ function addChatMessage({ sender, text, statusTag, statusType }) {
   dom.chatStream.scrollTop = dom.chatStream.scrollHeight;
 }
 
+// Typing Indicator (Tạo khoảng dừng tự nhiên để người dùng cảm nhận AI đang đọc)
+function showTypingIndicator(message) {
+  removeTypingIndicator();
+
+  const indicator = document.createElement("div");
+  indicator.className = "typing-indicator";
+  indicator.innerHTML = `
+    <span class="typing-dot"></span>
+    <span>${escapeHTML(message)}</span>
+  `;
+
+  dom.chatStream.appendChild(indicator);
+  dom.chatStream.scrollTop = dom.chatStream.scrollHeight;
+}
+
+function removeTypingIndicator() {
+  if (dom.chatStream) {
+    const el = dom.chatStream.querySelector(".typing-indicator");
+    if (el) el.remove();
+  }
+}
+
+// Bật/tắt trạng thái nhập liệu
+function setInputsDisabled(isDisabled) {
+  state.isEvaluating = isDisabled;
+  dom.roomTextarea.disabled = isDisabled;
+  dom.btnSubmitAnswer.disabled = isDisabled;
+  dom.simButtons.forEach((btn) => (btn.disabled = isDisabled));
+}
+
+// Hiển thị thanh chuyển tiếp có nút bấm để người dùng chủ động đọc feedback
+function showNextActionBanner() {
+  const isLastQuestion = state.currentQuestionIndex >= LESSON_DATA.questions.length - 1;
+
+  if (isLastQuestion) {
+    dom.nextActionTitle.textContent = "Hoàn thành toàn bộ buổi học bằng cách dạy!";
+    dom.nextActionDesc.textContent = "Bạn hãy dành thời gian đọc kỹ nhận xét trên. Khi đã sẵn sàng, bấm nút bên phải để xem bảng tổng kết năng lực.";
+    dom.btnProceedNext.textContent = "Xem Dashboard tổng kết →";
+  } else {
+    const nextQNum = state.currentQuestionIndex + 2;
+    dom.nextActionTitle.textContent = "Đề tài này đã hoàn thành!";
+    dom.nextActionDesc.textContent = "Bạn hãy dành thời gian đọc kỹ nhận xét và phản hồi ở trên. Khi đã sẵn sàng, bấm nút để tiếp tục.";
+    dom.btnProceedNext.textContent = `Chuyển sang Đề tài ${nextQNum}/${LESSON_DATA.questions.length} →`;
+  }
+
+  // Ẩn form nhập và thanh demo để người dùng tập trung vào feedback và nút chuyển
+  if (dom.roomInputContainer) dom.roomInputContainer.style.display = "none";
+  if (dom.simulationBar) dom.simulationBar.style.display = "none";
+
+  dom.nextActionCard.classList.add("visible");
+  dom.chatStream.scrollTop = dom.chatStream.scrollHeight;
+}
+
 // Xử lý gửi lời giải thích từ người dùng
 function handleUserSubmit(overrideText = null, overrideType = null) {
+  if (state.isEvaluating) return;
+
   const text = overrideText !== null ? overrideText : dom.roomTextarea.value.trim();
 
   if (!text) {
@@ -309,9 +380,21 @@ function handleUserSubmit(overrideText = null, overrideType = null) {
 
   dom.roomTextarea.value = "";
   updateCharCounter();
+  setInputsDisabled(true);
 
-  // 2. LLM Học viên đánh giá câu trả lời
-  processEvaluation(text, overrideType);
+  // 2. Hiển thị thông báo đang đọc (Tạo khoảng pause hợp lý)
+  const isTAIntervention = state.attemptCount >= 2 && overrideType === "incorrect";
+  const typingMsg = isTAIntervention
+    ? "Trợ giảng AI đang mở Slide nguồn để đối chiếu kiến thức..."
+    : "Học viên AI đang đọc lời giải thích và đối chiếu với slide...";
+
+  showTypingIndicator(typingMsg);
+
+  // 3. Sau 750ms dừng đọc, đưa ra phản hồi
+  setTimeout(() => {
+    removeTypingIndicator();
+    processEvaluation(text, overrideType);
+  }, 750);
 }
 
 // Chấm độ hoàn thiện và phản hồi theo 4 nhánh nghiệp vụ
@@ -342,93 +425,92 @@ function processEvaluation(userText, forceType = null) {
     return;
   }
 
-  // Trường hợp 1: Nếu Đủ ý -> Chúc mừng và chuyển sang câu tiếp theo
+  // Trường hợp 1: Nếu Đủ ý -> LLM Học viên hiểu bài, DỪNG LẠI CHO NGƯỜI DÙNG ĐỌC, KHÔNG TỰ ĐỘNG BIẾN MẤT
   if (scenarioResult.statusType === "sufficient") {
-    setTimeout(() => {
-      addChatMessage({
-        sender: "student",
-        text: scenarioResult.aiFeedback,
-        statusTag: scenarioResult.statusTag,
-        statusType: "sufficient"
-      });
+    addChatMessage({
+      sender: "student",
+      text: scenarioResult.aiFeedback,
+      statusTag: scenarioResult.statusTag,
+      statusType: "sufficient"
+    });
 
-      // Lưu kết quả câu này
-      saveQuestionResult({
-        questionId: currentQ.id,
-        topic: currentQ.topic,
-        mastered: true,
-        attempts: state.attemptCount,
-        note: "Giải thích rõ ràng, đúng trọng tâm phân phối xác suất và cơ chế lấy mẫu."
-      });
+    // Lưu kết quả câu này
+    saveQuestionResult({
+      questionId: currentQ.id,
+      topic: currentQ.topic,
+      mastered: true,
+      attempts: state.attemptCount,
+      note: "Giải thích rõ ràng, đúng trọng tâm phân phối xác suất và cơ chế lấy mẫu."
+    });
 
-      // Sau 1.2s chuyển câu tiếp theo hoặc sang Dashboard
-      setTimeout(advanceToNextQuestion, 1200);
-    }, 400);
+    // Hiện nút để người dùng chủ động bấm tiếp tục khi đã đọc xong
+    showNextActionBanner();
     return;
   }
 
   // Trường hợp 2: Nếu Thiếu ý -> Hỏi thêm để gợi ý học viên đến câu trả lời đúng
   if (scenarioResult.statusType === "partial") {
-    setTimeout(() => {
-      addChatMessage({
-        sender: "student",
-        text: scenarioResult.aiFeedback,
-        statusTag: scenarioResult.statusTag,
-        statusType: "partial"
-      });
-    }, 400);
+    addChatMessage({
+      sender: "student",
+      text: scenarioResult.aiFeedback,
+      statusTag: scenarioResult.statusTag,
+      statusType: "partial"
+    });
+
+    // Cho phép người dùng tiếp tục giải thích bổ sung
+    setInputsDisabled(false);
+    setTimeout(() => dom.roomTextarea.focus(), 150);
     return;
   }
 
   // Trường hợp 3: Nếu Sai -> Chỉ ra chỗ sai và hỏi lại học viên
   if (scenarioResult.statusType === "incorrect") {
-    setTimeout(() => {
-      addChatMessage({
-        sender: "student",
-        text: scenarioResult.aiFeedback,
-        statusTag: scenarioResult.statusTag,
-        statusType: "incorrect"
-      });
-    }, 400);
+    addChatMessage({
+      sender: "student",
+      text: scenarioResult.aiFeedback,
+      statusTag: scenarioResult.statusTag,
+      statusType: "incorrect"
+    });
+
+    // Cho phép người dùng sửa lại
+    setInputsDisabled(false);
+    setTimeout(() => dom.roomTextarea.focus(), 150);
     return;
   }
 }
 
-// Kích hoạt Trợ giảng AI can thiệp
+// Kích hoạt Trợ giảng AI can thiệp (DỪNG LẠI CHO NGƯỜI DÙNG ĐỌC BÀI GIẢNG CỦA TRỢ GIẢNG)
 function triggerTeachingAssistantIntervention(currentQ) {
-  setTimeout(() => {
-    addChatMessage({
-      sender: "ta",
-      text: currentQ.scenarios.taIntervention.taExplanation,
-      statusTag: currentQ.scenarios.taIntervention.statusTag,
-      statusType: "ta"
-    });
+  addChatMessage({
+    sender: "ta",
+    text: currentQ.scenarios.taIntervention.taExplanation,
+    statusTag: currentQ.scenarios.taIntervention.statusTag,
+    statusType: "ta"
+  });
 
-    saveQuestionResult({
-      questionId: currentQ.id,
-      topic: currentQ.topic,
-      mastered: false,
-      attempts: 3,
-      note: `Cần Trợ giảng AI giảng giải lại kiến thức chuẩn từ ${currentQ.slideRef}.`
-    });
+  saveQuestionResult({
+    questionId: currentQ.id,
+    topic: currentQ.topic,
+    mastered: false,
+    attempts: 3,
+    note: `Cần Trợ giảng AI giảng giải lại kiến thức chuẩn từ ${currentQ.slideRef}.`
+  });
 
-    setTimeout(advanceToNextQuestion, 1600);
-  }, 400);
+  // Hiển thị nút chuyển tiếp để người dùng đọc kỹ lời trợ giảng xong mới bấm chuyển
+  showNextActionBanner();
 }
 
-// Chuyển sang câu hỏi kế tiếp hoặc kết thúc buổi dạy
+// Chuyển sang câu hỏi kế tiếp hoặc kết thúc buổi dạy khi người dùng BẤM NÚT
 function advanceToNextQuestion() {
   if (state.currentQuestionIndex < LESSON_DATA.questions.length - 1) {
     state.currentQuestionIndex++;
     setupTeachingRoom();
   } else {
-    // Hết câu hỏi -> Chuyển sang Dashboard
     goToStep(3);
   }
 }
 
 function saveQuestionResult(result) {
-  // Thay thế nếu đã có hoặc thêm mới
   const existingIdx = state.questionResults.findIndex((r) => r.questionId === result.questionId);
   if (existingIdx >= 0) {
     state.questionResults[existingIdx] = result;
@@ -538,6 +620,7 @@ function resetEntireApp() {
   state.attemptCount = 0;
   state.chatHistory = [];
   state.questionResults = [];
+  state.isEvaluating = false;
   goToStep(1);
 }
 
@@ -567,6 +650,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   dom.btnSubmitAnswer.addEventListener("click", () => handleUserSubmit());
 
+  // Nút chuyển tiếp có kiểm soát (Pause & Proceed)
+  dom.btnProceedNext.addEventListener("click", () => {
+    advanceToNextQuestion();
+  });
+
   // Quick Simulation Buttons (Hỗ trợ demo 4 nhánh flow)
   dom.btnSimSufficient.addEventListener("click", () => {
     const q = LESSON_DATA.questions[state.currentQuestionIndex];
@@ -585,7 +673,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   dom.btnSimTA.addEventListener("click", () => {
     const q = LESSON_DATA.questions[state.currentQuestionIndex];
-    // Ép vượt qua 3 lượt sai để kích hoạt Trợ giảng AI
     state.attemptCount = 2; // sẽ thành 3 trong processEvaluation
     handleUserSubmit(q.scenarios.incorrect.userAnswer, "incorrect");
   });

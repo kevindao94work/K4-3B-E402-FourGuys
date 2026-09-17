@@ -771,6 +771,71 @@ body {
   display: block;
 }
 
+/* Typing Indicator (Pause Simulation) */
+.typing-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: #ffffff;
+  border: 1px dashed var(--slate-300);
+  border-radius: var(--radius-md);
+  font-size: 0.82rem;
+  color: var(--slate-600);
+  width: fit-content;
+  align-self: flex-start;
+  animation: pulseOpacity 1.2s infinite ease-in-out;
+}
+
+.typing-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--slate-500);
+  border-radius: 50%;
+  display: inline-block;
+}
+
+@keyframes pulseOpacity {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+/* Next Step Action Card (Controlled Pause & Proceed) */
+.next-action-card {
+  background: var(--slate-100);
+  border: 1px solid var(--slate-300);
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.next-action-card.visible {
+  display: flex;
+}
+
+.next-action-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.next-action-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--slate-950);
+}
+
+.next-action-desc {
+  font-size: 0.8rem;
+  color: var(--slate-600);
+}
+
 /* Step 3: Dashboard */
 .dashboard-scorecard {
   background: var(--slate-50);
