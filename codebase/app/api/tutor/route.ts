@@ -65,7 +65,7 @@ export async function POST(request: Request) {
     if (!objective) throw new Error("Unknown objective");
     const approvedEvidence = approvedTutorEvidenceForObjective(objective);
     if (!approvedEvidence.length) {
-      send({ type: "error", error: "Chưa thể mời Trợ giảng vì phần này chưa có dẫn chứng slide đã được duyệt." });
+      send({ type: "error", error: "Chưa thể mời Trợ giảng vì phần này chưa có dẫn chứng slide đã được duyệt. Bạn có thể chọn mục đã có evidence được duyệt hoặc chờ rà soát nguồn rồi thử lại." });
       return;
     }
 
