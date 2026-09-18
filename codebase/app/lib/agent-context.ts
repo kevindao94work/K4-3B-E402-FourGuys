@@ -39,11 +39,16 @@ function scopedState(objective: MapObjective, state: SessionState) {
   };
 }
 
-export function learnerOpeningContext(objective: MapObjective, targetClaim: MapClaim) {
+/**
+ * The first turn establishes the whole learning objective.  Later turns may
+ * deliberately narrow to one missing claim, but opening with only the first
+ * claim makes comparison objectives sound unrelated to their stated goal.
+ */
+export function learnerOpeningContext(objective: MapObjective) {
   return {
-    task: "ask_opening_question",
+    task: "ask_friendly_objective_opening",
     objective: { id: objective.id, goal: objective.title },
-    target_claim: publicClaim(targetClaim),
+    required_claims: objective.required_claims.map(publicClaim),
   };
 }
 
@@ -55,6 +60,14 @@ export function learnerAssessmentContext(objective: MapObjective, state: Session
     common_misconceptions: objective.common_misconceptions.map((item) => ({ id: item.id, statement: item.text })),
     session: scopedState(objective, state),
     recent_turns: compactHistory(history),
+    newest_user_message: compactText(newestUserMessage),
+  };
+}
+
+/** Intentionally excludes history and lesson content so routing cannot confuse who asked for help. */
+export function learnerIntentContext(newestUserMessage: string) {
+  return {
+    task: "classify_tutor_need",
     newest_user_message: compactText(newestUserMessage),
   };
 }
@@ -82,13 +95,18 @@ export function approvedTutorEvidence(targetClaim: MapClaim) {
     .filter((item) => item.review_status === "approved");
 }
 
-export function tutorContext(objective: MapObjective, targetClaim: MapClaim, reason: string | undefined, history: RawHistoryMessage[]) {
+export function approvedTutorEvidenceForObjective(objective: MapObjective) {
+  return objective.required_claims.flatMap((claim) => approvedTutorEvidence(claim));
+}
+
+/** Tutor explains the whole selected objective, so a single accurate retell can complete it. */
+export function tutorContext(objective: MapObjective, reason: string | undefined, history: RawHistoryMessage[]) {
   return {
-    task: "explain_one_learning_gap",
+    task: "explain_entire_learning_objective",
     objective: { id: objective.id, goal: objective.title },
-    target_claim: publicClaim(targetClaim),
+    required_claims: objective.required_claims.map(publicClaim),
     reason: compactText(reason),
-    approved_evidence: approvedTutorEvidence(targetClaim),
+    approved_evidence: approvedTutorEvidenceForObjective(objective),
     recent_turns: compactHistory(history),
   };
 }

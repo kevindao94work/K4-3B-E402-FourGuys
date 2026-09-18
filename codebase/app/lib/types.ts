@@ -8,14 +8,9 @@ export type SessionState = {
   repeatedMisconceptions: Record<string, number>;
   tutorUsed: boolean;
   awaitingRetell: boolean;
-  needsApplication: boolean;
-  applicationPassed: boolean;
-  offTopicStreak: number;
   turnsWithoutProgress: number;
   completed: boolean;
   paused: boolean;
-  lastQuestion?: string;
-  tutorTargetClaimId?: string;
 };
 
 export type ChatRole = "student" | "tutor" | "user" | "system";
@@ -38,8 +33,10 @@ export type AgentTrace = {
   objectiveTitle: string;
   action: string;
   summary: string;
-  promptInput?: never;
-  rawResponse?: never;
+  /** Structured decision data for auditing; never private chain-of-thought. */
+  decision?: Record<string, unknown>;
+  promptInput: string;
+  rawResponse: string;
   loggedAt: string;
   persisted: boolean;
 };
@@ -53,7 +50,6 @@ export type ChatMessage = {
   citations?: SourceCitation[];
   trace?: AgentTrace;
   statusLabel?: string;
-  topicChoices?: { id: string; title: string }[];
 };
 
 export type LearnResult = {
@@ -74,9 +70,6 @@ export const initialState: SessionState = {
   repeatedMisconceptions: {},
   tutorUsed: false,
   awaitingRetell: false,
-  needsApplication: false,
-  applicationPassed: false,
-  offTopicStreak: 0,
   turnsWithoutProgress: 0,
   completed: false,
   paused: false,

@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "eval": "node scripts/evaluate.mjs",
     "eval:test": "node --test scripts/eval-core.test.mjs",
-    "test": "node --test scripts/eval-core.test.mjs scripts/learning-policy.test.mjs",
+    "test": "node --experimental-strip-types --test scripts/eval-core.test.mjs scripts/learning-policy.test.mjs",
     "eval:demo": "node scripts/eval-demo.mjs"
   },
   "dependencies": {

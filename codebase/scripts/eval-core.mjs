@@ -10,7 +10,7 @@ export function parseSse(text) {
   return events;
 }
 export function initialState(objectives, id) {
-  return {currentObjectiveId:id, objectiveStatus:Object.fromEntries(objectives.map(o=>[o.id,o.id===id?'in_progress':'not_started'])),coveredClaimIds:[],attemptsPerObjective:{},repeatedMisconceptions:{},tutorUsed:false,awaitingRetell:false,needsApplication:false,applicationPassed:false,offTopicStreak:0,turnsWithoutProgress:0,completed:false,paused:false};
+  return {currentObjectiveId:id, objectiveStatus:Object.fromEntries(objectives.map(o=>[o.id,o.id===id?'in_progress':'not_started'])),coveredClaimIds:[],attemptsPerObjective:{},repeatedMisconceptions:{},tutorUsed:false,awaitingRetell:false,turnsWithoutProgress:0,completed:false,paused:false};
 }
 export const dimensions = ['specific_issue','grounding','learner_role','next_step'];
 export function validateVerdict(v) {

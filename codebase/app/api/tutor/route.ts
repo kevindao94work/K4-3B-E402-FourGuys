@@ -1,14 +1,25 @@
 import OpenAI from "openai";
 import { appendAiTrace } from "@/app/lib/ai-trace-log";
-import { approvedTutorEvidence, tutorContext } from "@/app/lib/agent-context";
+import { approvedTutorEvidenceForObjective, tutorContext } from "@/app/lib/agent-context";
 import { citationsForMapClaims, loadKnowledgeMap, requireSourcePdf, objectiveById, safeSessionState } from "@/app/lib/server-knowledge-map";
 import { streamCompletionText, streamResponse } from "@/app/lib/sse";
 import type { SessionState } from "@/app/lib/types";
 
-type TutorRequest = { state: SessionState; reason?: string; history: { role: string; content: string }[] };
+type TutorRequest = { state: SessionState; reason?: string; history: { role: string; content: string }[]; learnerDecision?: Record<string, unknown> };
 type TutorResponse = { explanation: string; used_evidence_ids: string[]; retell_question: string };
 
-const tutorInstruction = "Bạn là Agent Tutor. Chỉ giải thích target_claim bằng approved_evidence được cung cấp; không dùng kiến thức ngoài phạm vi này. Viết tiếng Việt, giọng đồng cảm, phần explanation tối đa 120 từ. Bắt buộc kết thúc bằng retell_question mời người dùng tự giảng lại. Trả về đúng JSON schema. used_evidence_ids phải có ít nhất một ID evidence được cung cấp.";
+function countWords(text: string) {
+  let count = 0;
+  let insideWord = false;
+  for (const character of text.trim()) {
+    const isWhitespace = character.trim().length === 0;
+    if (!isWhitespace && !insideWord) count += 1;
+    insideWord = !isWhitespace;
+  }
+  return count;
+}
+
+const tutorInstruction = "Bạn là Agent Tutor. Giải thích TOÀN BỘ required_claims của objective bằng approved_evidence được cung cấp; không dùng kiến thức ngoài phạm vi này. Viết tiếng Việt, giọng đồng cảm, phần explanation tối đa 220 từ. Sau đó đặt một retell_question mời người dùng tự diễn đạt lại đủ các ý. Nếu họ diễn đạt lại đúng đủ, hệ thống sẽ chấp nhận hoàn tất. Trả về JSON đúng schema. used_evidence_ids phải có ít nhất một ID evidence được cung cấp.";
 
 const tutorSchema = {
   type: "json_schema" as const,
@@ -31,14 +42,14 @@ const tutorSchema = {
 function isValidTutorResponse(value: unknown, allowedEvidenceIds: Set<string>): value is TutorResponse {
   if (!value || typeof value !== "object") return false;
   const candidate = value as Partial<TutorResponse>;
-  const wordCount = typeof candidate.explanation === "string" ? candidate.explanation.trim().split(/\s+/).filter(Boolean).length : Infinity;
+  const wordCount = typeof candidate.explanation === "string" ? countWords(candidate.explanation) : Infinity;
   return typeof candidate.explanation === "string"
     && typeof candidate.retell_question === "string"
     && candidate.retell_question.trim().length > 0
     && Array.isArray(candidate.used_evidence_ids)
     && candidate.used_evidence_ids.length > 0
     && candidate.used_evidence_ids.every((id) => typeof id === "string" && allowedEvidenceIds.has(id))
-    && wordCount <= 120;
+    && wordCount <= 220;
 }
 
 export async function POST(request: Request) {
@@ -52,20 +63,18 @@ export async function POST(request: Request) {
     const state = safeSessionState(map, body.state);
     const objective = objectiveById(map, state.currentObjectiveId);
     if (!objective) throw new Error("Unknown objective");
-    const targetClaim = objective.required_claims.find((claim) => claim.id === state.tutorTargetClaimId) ?? objective.required_claims.find((claim) => !state.coveredClaimIds.includes(claim.id)) ?? objective.required_claims[0];
-    if (!targetClaim) throw new Error("Objective has no required claims");
-    const approvedEvidence = approvedTutorEvidence(targetClaim);
+    const approvedEvidence = approvedTutorEvidenceForObjective(objective);
     if (!approvedEvidence.length) {
       send({ type: "error", error: "Chưa thể mời Trợ giảng vì phần này chưa có dẫn chứng slide đã được duyệt." });
       return;
     }
 
-    const citations = citationsForMapClaims(objective, [targetClaim.id], true);
+    const citations = citationsForMapClaims(objective, objective.required_claims.map((claim) => claim.id), true);
     const evidenceSlideIds = citations.flatMap((citation) => citation.slideIds);
-    send({ type: "meta", evidenceSlideIds, citations, state: { ...state, tutorUsed: true, awaitingRetell: true, needsApplication: false, applicationPassed: false, completed: false, paused: false } });
+    send({ type: "meta", evidenceSlideIds, citations, state: { ...state, tutorUsed: true, awaitingRetell: true, completed: false, paused: false } });
 
     const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
-    const promptInput = JSON.stringify(tutorContext(objective, targetClaim, body.reason, body.history));
+    const promptInput = JSON.stringify(tutorContext(objective, body.reason, body.history));
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
     const completion = await openai.chat.completions.create({
       model,
@@ -93,13 +102,16 @@ export async function POST(request: Request) {
     const saved = await appendAiTrace({
       route: "/api/tutor", agent: "tutor", model, objective: { id: objective.id, title: objective.title },
       prompt: { system: tutorInstruction, input: promptInput }, rawResponse,
-      decision: { target_claim_id: targetClaim.id, used_evidence_ids: response.used_evidence_ids },
+      decision: { scope: "entire_objective", used_evidence_ids: response.used_evidence_ids },
     });
     send({ type: "delta", text: content });
     send({ type: "trace", trace: {
       ...saved, agent: "tutor", model, objectiveTitle: objective.title,
-      action: "Giải thích một claim có evidence đã duyệt",
-      summary: `Claim: ${targetClaim.id}; evidence: ${response.used_evidence_ids.join(", ")}.`,
+      action: "Giải thích toàn bộ mục tiêu có evidence đã duyệt",
+      summary: `Evidence: ${response.used_evidence_ids.join(", ")}.`,
+      decision: { scope: "entire_objective", used_evidence_ids: response.used_evidence_ids, learner_assessment: body.learnerDecision },
+      promptInput,
+      rawResponse,
       persisted: true,
     } });
   });

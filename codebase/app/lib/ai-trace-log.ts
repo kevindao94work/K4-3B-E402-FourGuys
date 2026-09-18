@@ -5,7 +5,7 @@ import path from "node:path";
 export type TraceLogRecord = {
   traceId?: string;
   route: "/api/start" | "/api/learn" | "/api/tutor";
-  agent: "learner" | "tutor" | "assessment" | "policy";
+  agent: "learner" | "tutor" | "assessment" | "router" | "policy";
   model: string;
   objective: { id: string; title: string };
   prompt: { system: string; input: string };

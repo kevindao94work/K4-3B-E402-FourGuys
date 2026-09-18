@@ -15,7 +15,7 @@ import { LessonHeader } from "@/components/lesson/LessonHeader";
 import { SlideViewer } from "@/components/lesson/SlideViewer";
 import { SummaryDashboard, type DashboardStats } from "@/components/lesson/SummaryDashboard";
 
-const STORAGE_PREFIX = "teachback-ai-v6";
+const STORAGE_PREFIX = "teachback-ai-v7";
 
 type StreamEvent = {
   type: "meta" | "delta" | "trace" | "error" | "done";
@@ -25,11 +25,11 @@ type StreamEvent = {
   offerTutor?: boolean;
   callTutor?: boolean;
   tutorReason?: string;
+  learnerDecision?: Record<string, unknown>;
   evidenceSlideIds?: string[];
   citations?: SourceCitation[];
   trace?: AgentTrace;
   statusLabel?: string;
-  topicChoices?: { id: string; title: string }[];
 };
 
 function uid() {
@@ -218,14 +218,14 @@ export default function Home() {
     }
   }
 
-  async function inviteTutor(reason: string, stateForTutor = session, historyForTutor = messages) {
+  async function inviteTutor(reason: string, stateForTutor = session, historyForTutor = messages, learnerDecision?: Record<string, unknown>) {
     setOfferTutor(false);
     setLoading(true);
     setActiveSpeaker("tutor");
     setTutorUsedObjectives((previous) => previous.includes(session.currentObjectiveId) ? previous : [...previous, session.currentObjectiveId]);
     const messageId = addMessage({ role: "tutor", content: "" });
     try {
-      await consumeSse("/api/tutor", { state: stateForTutor, reason, history: compactHistoryForApi(historyForTutor) }, (event) => {
+      await consumeSse("/api/tutor", { state: stateForTutor, reason, history: compactHistoryForApi(historyForTutor), learnerDecision }, (event) => {
         if (event.type === "meta") {
           if (event.state) setSession(event.state);
           if (event.evidenceSlideIds) patchMessage(messageId, { evidenceSlideIds: event.evidenceSlideIds });
@@ -252,16 +252,17 @@ export default function Home() {
     setActiveSpeaker("learner");
     let nextState = state;
     let callTutor = false;
+    let learnerDecision: Record<string, unknown> | undefined;
     let reason = "Cần làm rõ phần đang trao đổi";
     const reply: ChatMessage = { id: uid(), role: "student", content: "", createdAt: new Date().toISOString() };
     await consumeSse("/api/learn", { userMessage, state, history: compactHistoryForApi(priorMessages) }, (event) => {
       if (event.type === "meta") {
         if (event.state) { nextState = event.state; setSession(event.state); }
         callTutor = Boolean(event.callTutor);
+        learnerDecision = event.learnerDecision;
         reason = event.tutorReason || reason;
         reply.citations = event.citations ?? [];
         reply.statusLabel = event.statusLabel;
-        reply.topicChoices = event.topicChoices;
         setTutorReason(reason);
         setOfferTutor(Boolean(event.offerTutor));
       }
@@ -269,7 +270,7 @@ export default function Home() {
       if (event.type === "trace" && event.trace) reply.trace = event.trace;
       if (reply.content) setMessages([...history, { ...reply }]);
     });
-    return { state: nextState, history: [...history, reply], callTutor, reason };
+    return { state: nextState, history: [...history, reply], callTutor, reason, learnerDecision };
   }
 
   async function sendMessage() {
@@ -280,7 +281,7 @@ export default function Home() {
     setLoading(true);
     try {
       const result = await learnTurn(userMessage, session, messages);
-      if (result.callTutor) await inviteTutor(result.reason, result.state, result.history);
+      if (result.callTutor) await inviteTutor(result.reason, result.state, result.history, result.learnerDecision);
     } catch (error) {
       addMessage({ role: "system", content: error instanceof Error ? error.message : "Có lỗi xảy ra. Hãy thử lại." });
     } finally {
@@ -372,7 +373,7 @@ export default function Home() {
           <button onClick={() => setMapRevision(v => v + 1)} disabled={loading || mapLoading} className="rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-50">Tải lại nguồn</button>
         </div>
       </div>
-      <div className="grid min-h-0 flex-1 grid-cols-1 overflow-hidden xl:grid-cols-[minmax(260px,0.9fr)_minmax(240px,0.65fr)_minmax(380px,1.25fr)]">
+      <div className="grid min-h-0 flex-1 grid-cols-1 overflow-hidden xl:grid-cols-[50%_minmax(200px,0.65fr)_minmax(280px,1.25fr)]">
         <div className={`${panel === "slides" ? "block" : "hidden"} min-h-0 xl:block`}><SlideViewer activePage={activeSlidePage} sourceVersion={sourceVersion} pageCount={knowledgeMap?.source.page_count ?? 0} filename={knowledgeMap?.source.pdf.split("/").pop() ?? "Đang tải"} /></div>
         <div className={`${panel === "tree" ? "block" : "hidden"} min-h-0 border-l border-slate-200 xl:block`}><KnowledgeTree map={knowledgeMap} selectedObjectiveId={selectedObjectiveId} onSelectObjective={selectObjective} loading={mapLoading || loading} error={mapError} /></div>
         <section className={`${panel === "chat" ? "flex" : "hidden"} h-full min-h-0 min-w-0 flex-col overflow-hidden border-l border-slate-200 bg-white xl:flex`}>
@@ -396,7 +397,7 @@ export default function Home() {
               </div>
             </div>
           ) : (
-            <ChatFeed messages={messages} friend={peer} loading={loading} activeSpeaker={activeSpeaker} paused={session.paused} offerTutor={offerTutor} tutorReason={tutorReason} onRejectTutor={() => setOfferTutor(false)} onInviteTutor={() => { if (!loading && !turnInFlight.current) void inviteTutor(tutorReason); }} onSelectTopic={(id) => { const topic = objectives.find(o => o.id === id); if (topic) selectObjective(topic); }} onOpenCitation={(citation) => { setActiveSlidePage(citation.firstPdfPage); setPanel("slides"); }} chatEndRef={chatEndReference} />
+            <ChatFeed messages={messages} friend={peer} loading={loading} activeSpeaker={activeSpeaker} paused={session.paused} offerTutor={offerTutor} tutorReason={tutorReason} onRejectTutor={() => setOfferTutor(false)} onInviteTutor={() => { if (!loading && !turnInFlight.current) void inviteTutor(tutorReason); }} onOpenCitation={(citation) => { setActiveSlidePage(citation.firstPdfPage); setPanel("slides"); }} chatEndRef={chatEndReference} />
           )}
           {started && <ChatInput examples={responseExamples} onFastTrack={() => void fastTrackTutor()} fastTrackStep={fastTrackStep} draft={draft} onDraftChange={setDraft} onSend={() => void sendMessage()} disabled={loading || session.completed || session.paused || session.objectiveStatus[session.currentObjectiveId] === "mastered"} />}
         </section>
