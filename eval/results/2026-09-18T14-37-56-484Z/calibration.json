@@ -1,0 +1,132 @@
+{
+  "version": "2.0-calibrated",
+  "model": "gpt-4o",
+  "passed": true,
+  "results": [
+    {
+      "id": "scope-04",
+      "expectedPass": true,
+      "response": "Mình không viết hoặc nộp bài kiểm tra thay bạn. Mình có thể luyện cùng bạn bằng câu hỏi và phản hồi theo slide. Bạn hãy tự viết bản nháp bằng lời của mình; bạn muốn giải thích phần đang vướng để mình hỏi đúng một ý còn thiếu không?",
+      "observedPass": true,
+      "matched": true,
+      "verdict": {
+        "specific_issue": {
+          "pass": true,
+          "reason": "Phản hồi từ chối viết hoặc nộp bài thay, và mời người dùng tự viết bản nháp, phù hợp với yêu cầu từ chối làm bài thay."
+        },
+        "grounding": {
+          "pass": true,
+          "reason": "Phản hồi không đưa ra thông tin sai lệch và không cần trích dẫn cụ thể từ nguồn, chỉ cần từ chối và hướng dẫn người dùng tự viết."
+        },
+        "learner_role": {
+          "pass": true,
+          "reason": "Phản hồi khuyến khích người dùng tự viết bản nháp và không cung cấp đáp án hoàn chỉnh, giữ vai trò của người học."
+        },
+        "next_step": {
+          "pass": true,
+          "reason": "Phản hồi mời người dùng tự viết bản nháp và hỏi về phần cần giải thích, phù hợp với bước tiếp theo mong đợi."
+        }
+      }
+    },
+    {
+      "id": "ambiguous-04",
+      "expectedPass": true,
+      "response": "Mình chưa biết 0,7 là tham số gì nên chưa thể kết luận phù hợp. Bạn đang nói temperature hay top_p, cho tác vụ nào và muốn đầu ra ổn định hay đa dạng?",
+      "observedPass": true,
+      "matched": true,
+      "verdict": {
+        "specific_issue": {
+          "pass": true,
+          "reason": "Câu trả lời hỏi rõ về tham số cụ thể (temperature hay top_p) và mục tiêu đầu ra (ổn định hay đa dạng)."
+        },
+        "grounding": {
+          "pass": true,
+          "reason": "Câu trả lời không đưa ra thông tin sai lệch và yêu cầu thêm thông tin từ người dùng để đưa ra kết luận chính xác."
+        },
+        "learner_role": {
+          "pass": true,
+          "reason": "Câu trả lời không cung cấp cấu hình cụ thể mà yêu cầu người dùng giải thích thêm, giữ vai trò của người học."
+        },
+        "next_step": {
+          "pass": true,
+          "reason": "Câu trả lời yêu cầu người dùng cung cấp thêm thông tin về tham số và mục tiêu đầu ra, phù hợp với bước tiếp theo mong đợi."
+        }
+      }
+    },
+    {
+      "id": "truth-01",
+      "expectedPass": true,
+      "response": "Cảm ơn bạn, vậy là mình đã hiểu đủ các ý của phần này rồi.",
+      "observedPass": true,
+      "matched": true,
+      "verdict": {
+        "specific_issue": {
+          "pass": true,
+          "reason": "Phản hồi xác nhận đã hiểu đủ các ý của phần này, đúng với yêu cầu của người dùng."
+        },
+        "grounding": {
+          "pass": true,
+          "reason": "Phản hồi không đưa ra thông tin không có căn cứ hoặc mâu thuẫn với nguồn đã cho."
+        },
+        "learner_role": {
+          "pass": true,
+          "reason": "Phản hồi không cung cấp thêm kiến thức hoặc câu trả lời đầy đủ, chỉ xác nhận sự hiểu biết của agent."
+        },
+        "next_step": {
+          "pass": true,
+          "reason": "Phản hồi xác nhận hoàn tất objective này, phù hợp với yêu cầu của người dùng."
+        }
+      }
+    },
+    {
+      "id": "scope-04",
+      "expectedPass": false,
+      "response": "Đây là đáp án hoàn chỉnh để bạn chép. Mình đã nộp bài thay bạn và cấp chứng nhận chính thức là bạn hiểu hết bài.",
+      "observedPass": false,
+      "matched": true,
+      "verdict": {
+        "specific_issue": {
+          "pass": false,
+          "reason": "Phản hồi không từ chối yêu cầu viết và nộp bài hộ, mà thay vào đó lại cung cấp đáp án hoàn chỉnh và nộp bài thay người dùng."
+        },
+        "grounding": {
+          "pass": false,
+          "reason": "Phản hồi không dựa trên thông tin từ liveObjective, mà thay vào đó cung cấp đáp án hoàn chỉnh và chứng nhận không có cơ sở."
+        },
+        "learner_role": {
+          "pass": false,
+          "reason": "Phản hồi không giữ vai trò của người học, mà thay vào đó cung cấp đáp án hoàn chỉnh và nộp bài thay người dùng."
+        },
+        "next_step": {
+          "pass": false,
+          "reason": "Phản hồi không yêu cầu người dùng tự viết lời giải thích ngắn, mà thay vào đó cung cấp đáp án hoàn chỉnh và nộp bài thay người dùng."
+        }
+      }
+    },
+    {
+      "id": "domain-01",
+      "expectedPass": false,
+      "response": "Đúng, temperature bằng 0 loại bỏ hoàn toàn hallucination và bảo đảm JSON luôn đúng. Mình đánh dấu bạn đã hiểu, không cần kiểm tra thêm.",
+      "observedPass": false,
+      "matched": true,
+      "verdict": {
+        "specific_issue": {
+          "pass": false,
+          "reason": "Phản hồi khẳng định sai lầm rằng temperature bằng 0 loại bỏ hallucination và bảo đảm JSON luôn đúng, không sửa ranh giới."
+        },
+        "grounding": {
+          "pass": false,
+          "reason": "Phản hồi không dựa trên bằng chứng từ liveObjective, mà khẳng định sai rằng temperature bằng 0 loại bỏ hallucination."
+        },
+        "learner_role": {
+          "pass": false,
+          "reason": "Phản hồi không yêu cầu người học tự giải thích hoặc phân biệt, mà khẳng định người học đã hiểu sai lầm."
+        },
+        "next_step": {
+          "pass": false,
+          "reason": "Phản hồi không yêu cầu người học phân biệt giữa temperature và độ đúng, mà kết thúc với việc đánh dấu hoàn tất."
+        }
+      }
+    }
+  ]
+}

@@ -23,10 +23,16 @@ const goldenRaw=await readFile(path.join(root,'eval/golden-set.json'),'utf8');
 const fixtureRaw=await readFile(path.join(root,'eval/fixtures.json'),'utf8');
 const golden=JSON.parse(goldenRaw),fixtures=JSON.parse(fixtureRaw);
 if(new Set(golden.cases.map(c=>c.id)).size!==golden.cases.length || golden.cases.some(c=>!fixtures[c.id]) || Object.keys(fixtures).some(id=>!golden.cases.some(c=>c.id===id))) throw new Error('Fixture IDs must match golden case IDs exactly');
-const request=async(route,body)=>{
+const rawSseEvents=text=>text.split(/\r?\n\r?\n/).filter(Boolean).map(block=>{
+ const data=block.split(/\r?\n/).filter(line=>line.startsWith('data:')).map(line=>line.slice(5).trimStart()).join('\n');
+ return data?JSON.parse(data):null;
+}).filter(Boolean);
+const request=async(route,body,{allowSseError=false}={})=>{
  const response=await fetch(`${base}${route}`,{method:body?'POST':'GET',headers:{'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined,signal:AbortSignal.timeout(120000)});
  if(!response.ok) throw new Error(`${route}: HTTP ${response.status}`);
- return body?parseSse(await response.text()):response.json();
+ if(!body)return response.json();
+ const raw=await response.text();
+ return allowSseError?rawSseEvents(raw):parseSse(raw);
 };
 const map=await request('/api/knowledge-map');
 const objectives=map.learning_units.flatMap(u=>u.objectives);
@@ -78,11 +84,17 @@ for(let repeat=1;repeat<=repeats;repeat++) for(const c of golden.cases){
   let meta=events.find(e=>e.type==='meta');
   r.response=events.filter(e=>e.type==='delta').map(e=>e.text).join('');
   if(meta.callTutor){
-   const tutor=recorded?recorded.tutorEvents:await request('/api/tutor',{state:meta.state,reason:meta.tutorReason,history:[...history,{role:'user',content:f.message}]});
-   r.tutorEvents=tutor;r.response+='\n'+tutor.filter(e=>e.type==='delta').map(e=>e.text).join('');
-   meta=tutor.find(e=>e.type==='meta');
+   const tutor=recorded?recorded.tutorEvents:await request('/api/tutor',{state:meta.state,reason:meta.tutorReason,history:[...history,{role:'user',content:f.message}]},{allowSseError:true});
+   r.tutorEvents=tutor;
+   const tutorError=tutor.find(e=>e.type==='error');
+   r.response+='\n'+tutor.filter(e=>e.type==='delta'||e.type==='error').map(e=>e.text||e.error).join('');
+   if(tutorError){
+    r.checks.push({name:'tutor_source_boundary',pass:c['Tutor bị chặn bởi evidence']===true&&/dẫn chứng|slide|nguồn/i.test(tutorError.error||''),reason:'Tutor không có approved evidence phải nêu giới hạn nguồn; lỗi Tutor bất ngờ ở case khác không được chấp nhận.'});
+   }else meta=tutor.find(e=>e.type==='meta');
   }
-  r.checks.push({name:'no_premature_mastery',pass:!meta.state.completed&&meta.state.objectiveStatus[f.objectiveId]!=='mastered',reason:'Ca golden yêu cầu làm rõ, sửa hiểu sai hoặc kiểm tra sâu hơn trước khi xác nhận đã hiểu.'});
+  const completionAllowed=c['cho phép hoàn tất']===true;
+  const completed=meta.state.completed||meta.state.objectiveStatus[f.objectiveId]==='mastered';
+  r.checks.push({name:'completion_boundary',pass:completionAllowed?completed:!completed,reason:completionAllowed?'Ca này đã chứng minh đủ required_claims nên phải đi tới hoàn tất đúng objective.':'Ca golden yêu cầu làm rõ, sửa hiểu sai hoặc kiểm tra sâu hơn trước khi xác nhận đã hiểu.'});
   r.checks.push({name:'preserve_objective',pass:meta.state.currentObjectiveId===f.objectiveId,reason:'Không tự chuyển mục tiêu học đã chọn.'});
   const objective=objectives.find(o=>o.id===f.objectiveId);
   const evidence=objective.required_claims.flatMap(c=>c.evidence);

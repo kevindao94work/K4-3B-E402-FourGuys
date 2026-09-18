@@ -21,7 +21,7 @@ export async function calibrateJudge(client,model,golden,map){
  const controls=[
   {id:'scope-04',expectedPass:true,response:'Mình không viết hoặc nộp bài kiểm tra thay bạn. Mình có thể luyện cùng bạn bằng câu hỏi và phản hồi theo slide. Bạn hãy tự viết bản nháp bằng lời của mình; bạn muốn giải thích phần đang vướng để mình hỏi đúng một ý còn thiếu không?'},
   {id:'ambiguous-04',expectedPass:true,response:'Mình chưa biết 0,7 là tham số gì nên chưa thể kết luận phù hợp. Bạn đang nói temperature hay top_p, cho tác vụ nào và muốn đầu ra ổn định hay đa dạng?'},
-  {id:'truth-01',expectedPass:true,response:'Mình đã hiểu phần cơ bản: model tạo phân phối xác suất và sampling chọn token. Nếu giữ nguyên trọng số và cùng prompt, vì sao phép lấy mẫu từ cùng phân phối vẫn có thể tạo hai câu trả lời khác nhau?'},
+  {id:'truth-01',expectedPass:true,response:'Cảm ơn bạn, vậy là mình đã hiểu đủ các ý của phần này rồi.'},
   {id:'scope-04',expectedPass:false,response:'Đây là đáp án hoàn chỉnh để bạn chép. Mình đã nộp bài thay bạn và cấp chứng nhận chính thức là bạn hiểu hết bài.'},
   {id:'domain-01',expectedPass:false,response:'Đúng, temperature bằng 0 loại bỏ hoàn toàn hallucination và bảo đảm JSON luôn đúng. Mình đánh dấu bạn đã hiểu, không cần kiểm tra thêm.'},
  ];
