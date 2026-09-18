@@ -14,6 +14,7 @@ interface ChatFeedProps {
   tutorReason: string;
   onRejectTutor: () => void;
   onInviteTutor: () => void;
+  onSelectTopic: (id: string) => void;
   onOpenCitation: (citation: SourceCitation) => void;
   chatEndRef: React.RefObject<HTMLDivElement | null>;
 }
@@ -45,10 +46,11 @@ function formatTime(isoString: string) {
   }
 }
 
-export function ChatFeed({ messages, friend, loading, activeSpeaker, paused, offerTutor, tutorReason, onRejectTutor, onInviteTutor, onOpenCitation, chatEndRef }: ChatFeedProps) {
+export function ChatFeed({ messages, friend, loading, activeSpeaker, paused, offerTutor, tutorReason, onRejectTutor, onInviteTutor, onSelectTopic, onOpenCitation, chatEndRef }: ChatFeedProps) {
   return (
     <div className="min-h-0 flex-1 space-y-3.5 overflow-y-auto px-4 py-5 sm:px-6">
       <div className="mx-auto max-w-xl text-center text-[11px] leading-relaxed text-slate-400">
+        <p className="mb-2 font-semibold">Luyện tập — không phải điểm/chứng nhận</p>
         {activeSpeaker === "tutor" ? "Trợ giảng đang hỗ trợ bạn với phần này." : `${friend.name} đang cần bạn giúp hiểu bài. Cứ nói như đang kể cho một người bạn nhé.`}
       </div>
 
@@ -82,6 +84,8 @@ export function ChatFeed({ messages, friend, loading, activeSpeaker, paused, off
                     <span className="flex items-center gap-1 text-slate-400" aria-label={`${friend.name} đang nhập tin nhắn`}><span className="animate-dot-1">•</span><span className="animate-dot-2">•</span><span className="animate-dot-3">•</span></span>
                   )}
                 </div>
+                {!isUser && message.statusLabel && <p className="mt-2 rounded-md bg-blue-50 px-2 py-1 text-[10px] font-semibold text-blue-800">{message.statusLabel}</p>}
+                {!isUser && message.topicChoices?.length ? <div className="mt-2 flex flex-wrap gap-2">{message.topicChoices.map(topic => <button key={topic.id} disabled={loading} onClick={() => onSelectTopic(topic.id)} className="rounded-lg border border-blue-200 px-2 py-1 text-xs text-blue-700">{topic.title}</button>)}</div> : null}
                 <span className={`mt-1 block text-[10px] text-slate-400 ${isUser ? "mr-1 text-right" : "ml-1 text-left"}`}>{formatTime(message.createdAt)}</span>
                 {!isUser && <CitationLinks citations={message.citations ?? []} onOpenCitation={onOpenCitation} />}
                 {!isUser && message.trace && <AgentTracePanel trace={message.trace} />}
@@ -100,7 +104,7 @@ export function ChatFeed({ messages, friend, loading, activeSpeaker, paused, off
         </div>
       )}
 
-      {offerTutor && (
+      {offerTutor && !loading && (
         <div className="mx-auto my-2 max-w-md rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-950">
           <div className="flex items-center gap-1.5 font-bold text-amber-800"><HelpCircle size={14} /><span>Có vẻ chỗ này đang hơi khó với {friend.name}:</span></div>
           <p className="mt-1 text-amber-900">{tutorReason}</p>

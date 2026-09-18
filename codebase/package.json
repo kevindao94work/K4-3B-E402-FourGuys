@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "eval": "node scripts/evaluate.mjs",
+    "eval:test": "node --test scripts/eval-core.test.mjs",
+    "test": "node --test scripts/eval-core.test.mjs scripts/learning-policy.test.mjs",
+    "eval:demo": "node scripts/eval-demo.mjs"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",

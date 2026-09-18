@@ -1,0 +1,107 @@
+{
+  "schema_version": "1.0",
+  "ngon_ngu": "vi",
+  "tai_lieu": "day01-llm-foundation-1.pdf",
+  "huong_dan": [
+    "Mỗi ca bắt đầu bằng một phiên mới: mở Cây kiến thức, chọn đúng mục tiêu rồi bấm Bắt đầu trò chuyện.",
+    "Chỉ sao chép giá trị prompt vào ô chat; không gửi nhãn đúng/sai hoặc phần kỳ vọng cho agent.",
+    "Câu đúng vẫn cần một câu hỏi nhân quả hoặc áp dụng trước khi xác nhận đã hiểu.",
+    "Các câu trả lời áp dụng chỉ là gợi ý cho người thuyết trình; cần trả lời đúng câu agent thực sự hỏi.",
+    "Đây là ví dụ demo độc lập, không thay thế bộ golden hoặc kết quả đánh giá."
+  ],
+  "cac_ca": [
+    {
+      "id": "sampling-dung",
+      "loai": "đúng",
+      "objectiveId": "sampling-controls",
+      "muc_tieu": "Phân biệt temperature, top_p và độ đúng của đầu ra",
+      "trang_pdf": [25, 40],
+      "prompt": "Temperature thấp làm việc chọn token tập trung và ổn định hơn nên phù hợp với code hoặc phân tích; cao hơn giúp đa dạng ý tưởng. Top-p giới hạn nhóm token theo tổng xác suất tích lũy, không phải tỷ lệ số token trong từ vựng. Ví dụ xác suất 0,6; 0,3; 0,1 thì ngưỡng 0,9 giữ hai token đầu. Tuy vậy cả hai núm chỉ ảnh hưởng cách chọn token, không bảo đảm câu trả lời đúng sự thật hay JSON hợp lệ; mình vẫn cần kiểm tra nội dung và định dạng.",
+      "mong_doi": "Ghi nhận các ý đúng, hỏi một câu áp dụng hoặc phản ví dụ, chưa đánh dấu hoàn thành ngay.",
+      "khong_duoc": "Kết thúc phiên ngay khi người dùng vừa nêu đủ ý cơ bản.",
+      "goi_y_tra_loi_ap_dung": "Với trích xuất hóa đơn, mình ưu tiên ổn định và dùng temperature thấp, sau đó validate JSON và đối chiếu số tiền với nguồn. Với đặt tên chiến dịch, mình cần nhiều lựa chọn nên có thể tăng đa dạng. Trong cả hai trường hợp, sampling không thay thế kiểm chứng sự thật."
+    },
+    {
+      "id": "sampling-mot-phan",
+      "loai": "đúng một phần",
+      "objectiveId": "sampling-controls",
+      "muc_tieu": "Phân biệt temperature, top_p và độ đúng của đầu ra",
+      "trang_pdf": [40],
+      "prompt": "Mình sẽ dùng temperature thấp khi viết code để kết quả ổn định hơn, và tăng lên nếu muốn nhiều ý tưởng. Phần top-p thì mình chưa giải thích được nó chọn token như thế nào.",
+      "mong_doi": "Giữ phần đúng về temperature, hỏi hẹp về cách top-p chọn tập token; chưa cấp đủ ý hoặc hoàn thành.",
+      "khong_duoc": "Giảng toàn bộ đáp án thay người dùng hoặc đánh giá mọi ý đều sai."
+    },
+    {
+      "id": "sampling-sai",
+      "loai": "sai",
+      "objectiveId": "sampling-controls",
+      "muc_tieu": "Phân biệt temperature, top_p và độ đúng của đầu ra",
+      "trang_pdf": [40],
+      "prompt": "Nếu từ vựng có 10.000 token thì top-p bằng 0,8 luôn giữ đúng 8.000 token. Temperature cũng chỉ loại bớt token như vậy nên mình coi hai tham số là giống nhau.",
+      "mong_doi": "Phát hiện nhầm tỷ lệ số token với xác suất tích lũy; yêu cầu tự phân biệt hai cơ chế trên một ví dụ.",
+      "khong_duoc": "Xác nhận ngộ nhận hoặc tự chuyển sang giảng một chủ đề khác."
+    },
+    {
+      "id": "token-dung",
+      "loai": "đúng",
+      "objectiveId": "probabilistic-next-token",
+      "muc_tieu": "Giải thích xác suất token và sự biến thiên đầu ra",
+      "trang_pdf": [25, 40],
+      "prompt": "LLM dùng ngữ cảnh để dự đoán xác suất token tiếp theo, chẳng hạn ví dụ trong bài gán 0,94 cho phần Việt Nam. Sau đó bước chọn token có thể lấy mẫu từ các khả năng này; temperature điều chỉnh độ đa dạng, nên cùng một prompt vẫn có thể sinh khác nhau khi có sampling. Trọng số không cần học lại ở mỗi lượt. Vì tối ưu xác suất chứ không tối ưu sự thật, một câu nghe tự nhiên vẫn có thể sai.",
+      "mong_doi": "Ghi nhận cơ chế, hỏi sâu quan hệ giữa trọng số cố định và sampling hoặc một tình huống áp dụng trước khi hoàn thành.",
+      "khong_duoc": "Đồng nhất xác suất cao với đúng sự thật.",
+      "goi_y_tra_loi_ap_dung": "Giữ nguyên trọng số và cùng ngữ cảnh có thể cho cùng phân phối, nhưng phép lấy mẫu vẫn có thể chọn token khác. Ví dụ A có xác suất 0,7 và B có 0,3 thì cả hai vẫn có cơ hội được chọn. Token đã chọn lại đi vào ngữ cảnh của bước sau nên chuỗi có thể khác; không phải model vừa tự học Internet."
+    },
+    {
+      "id": "token-mot-phan",
+      "loai": "đúng một phần",
+      "objectiveId": "probabilistic-next-token",
+      "muc_tieu": "Giải thích xác suất token và sự biến thiên đầu ra",
+      "trang_pdf": [25],
+      "prompt": "LLM dự đoán token tiếp theo dựa vào những gì đã có trong ngữ cảnh và mỗi khả năng có một xác suất. Mình chưa nói rõ bước nào làm hai lần chạy cùng prompt có thể khác nhau.",
+      "mong_doi": "Công nhận ý ngữ cảnh/xác suất, hỏi vào bước sampling và biến thiên thay vì lặp lại câu hỏi mở đầu.",
+      "khong_duoc": "Đánh dấu đã hiểu chỉ vì có từ khóa xác suất."
+    },
+    {
+      "id": "token-sai",
+      "loai": "sai",
+      "objectiveId": "probabilistic-next-token",
+      "muc_tieu": "Giải thích xác suất token và sự biến thiên đầu ra",
+      "trang_pdf": [25, 40],
+      "prompt": "Hai lần hỏi khác nhau vì sau mỗi câu hỏi LLM tự lên Internet tải kiến thức mới và cập nhật toàn bộ trọng số. Không có bước lấy mẫu token nào cả.",
+      "mong_doi": "Nhận diện ngộ nhận tự cập nhật; yêu cầu giải thích hoặc phản ví dụ về sampling khi trọng số giữ nguyên.",
+      "khong_duoc": "Chấp nhận việc tự học Internet sau mỗi câu hỏi là cơ chế sinh đầu ra."
+    },
+    {
+      "id": "harness-dung",
+      "loai": "đúng",
+      "objectiveId": "agent-harness",
+      "muc_tieu": "Giải thích vai trò của harness",
+      "trang_pdf": [14],
+      "prompt": "Harness là phần không phải model bao quanh LLM: điều phối vòng gọi model, chạy tool và đưa kết quả trở lại; quản lý context, bộ nhớ phiên, quyền, sandbox, log và điều kiện dừng. Vì thế cùng một model nhưng harness kém vẫn có thể làm agent lan man hoặc đốt token. Ví dụ tool trả lỗi thì harness cần xử lý và có giới hạn vòng lặp, chứ không chỉ đổi sang model mạnh hơn.",
+      "mong_doi": "Ghi nhận hai ý cốt lõi, hỏi một tình huống áp dụng trước khi hoàn thành.",
+      "khong_duoc": "Nhầm harness với chính model hoặc cấp hoàn thành sau đúng một lượt.",
+      "goi_y_tra_loi_ap_dung": "Nếu agent gọi một tool bị lỗi lặp đi lặp lại, mình kiểm tra cách harness truyền lỗi vào context, số lần retry và điều kiện dừng. Mình thêm giới hạn vòng lặp và đường xin người hỗ trợ. Đổi model có thể không sửa được lỗi tool hay thiếu điểm dừng."
+    },
+    {
+      "id": "harness-mot-phan",
+      "loai": "đúng một phần",
+      "objectiveId": "agent-harness",
+      "muc_tieu": "Giải thích vai trò của harness",
+      "trang_pdf": [14],
+      "prompt": "Harness là phần nằm ngoài model, quản lý việc gọi model rồi chạy tool và đưa kết quả về. Mình mới mô tả được vòng lặp, chưa giải thích vì sao cùng model mà chất lượng agent lại khác nhau.",
+      "mong_doi": "Công nhận vòng lặp đúng, hỏi mối liên hệ giữa harness với context, quyền hoặc điểm dừng và chất lượng agent.",
+      "khong_duoc": "Xem câu trả lời là sai hoàn toàn hoặc xác nhận đã đủ ý."
+    },
+    {
+      "id": "harness-sai",
+      "loai": "sai",
+      "objectiveId": "agent-harness",
+      "muc_tieu": "Giải thích vai trò của harness",
+      "trang_pdf": [14],
+      "prompt": "Harness chính là bộ trọng số của LLM. Nếu agent lặp tool không dừng thì chỉ cần đổi model mạnh nhất là hết, không cần quản lý context, quyền hay giới hạn vòng lặp.",
+      "mong_doi": "Chỉ ra nhầm harness với model, hỏi người dùng tự giải thích phần điều phối bên ngoài và nguyên nhân vòng lặp không dừng.",
+      "khong_duoc": "Khẳng định model mạnh giải quyết được mọi lỗi điều phối."
+    }
+  ]
+}

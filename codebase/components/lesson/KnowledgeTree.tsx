@@ -12,13 +12,13 @@ interface KnowledgeTreeProps {
 
 export function KnowledgeTree({ map, selectedObjectiveId, onSelectObjective, loading, error }: KnowledgeTreeProps) {
   return (
-    <aside className="flex h-full w-80 shrink-0 flex-col border-r border-slate-200 bg-white">
+    <aside className="flex h-full w-full min-w-0 flex-col border-r border-slate-200 bg-white">
       <div className="border-b border-slate-100 px-4 py-4">
         <div className="flex items-center gap-2.5">
           <div className="grid size-8 place-items-center rounded-xl bg-blue-600 text-white shadow-sm"><BookOpen size={17} /></div>
           <div>
             <h1 className="text-sm font-extrabold text-slate-900">Cây kiến thức</h1>
-            <p className="text-[11px] text-slate-500">Chọn điều bạn muốn tự kiểm tra</p>
+            <p className="text-[11px] text-slate-500">{map?.learning_units.length ?? 0} nhóm · {map?.learning_units.reduce((n, unit) => n + unit.objectives.length, 0) ?? 0} mục tiêu</p>
           </div>
         </div>
       </div>

@@ -29,3 +29,21 @@
 - Sau sự kiện, xoá bản sao data khỏi máy và công cụ đã upload nếu ban tổ chức yêu cầu.
 
 Chi tiết quy định: `README.md` của repo, mục "Bảo mật dữ liệu được cung cấp".
+
+## Nguồn hiện hành của cây kiến thức (18/09/2026)
+
+- `slides/day01-llm-foundation-1.pdf`: bản gốc người dùng cung cấp, 52 trang; được ứng dụng mở theo đường dẫn trong Knowledge Map.
+- `ingested/d1-knowledge-map.json`: cây mới, giữ schema cũ; 9 nhóm, 36 mục tiêu, 82 ý kiến thức và 82 dẫn chứng.
+- `ingested/d1-slide-index.md`: chỉ mục đầy đủ 52 trang; dùng vị trí trang PDF, không phải số in ở chân slide.
+- `ingested/day01-question-tree.md`: bản cây dễ đọc.
+- `ingested/day01-tree-spec.json`: đặc tả mục tiêu, ý kiến thức và trích dẫn đã đối chiếu; khóa với SHA-256 của PDF đã xem.
+- `ingested/archive/d1-slide-hackathon/`: lưu bản Knowledge Map/chỉ mục trước khi thay nguồn. PDF hackathon cũ vẫn được giữ trong `slides/`.
+
+Tái tạo trên máy đã cài PyMuPDF:
+
+```sh
+.venv/bin/python scripts/regenerate-knowledge-map.py --pdf data/slides/day01-llm-foundation-1.pdf
+node scripts/validate-knowledge-map.mjs
+```
+
+`review_status=approved` trong cây mới có nghĩa trích dẫn đã được Codex đối chiếu với trang PDF và văn bản trích xuất, đủ dùng cho Tutor cục bộ. Đây không phải phê duyệt của con người đối với golden set. Các mâu thuẫn/điểm giản lược của slide được ghi trong `review_queue`; giá, số liệu và cú pháp SDK không được coi là thông tin hiện hành đã xác minh.
