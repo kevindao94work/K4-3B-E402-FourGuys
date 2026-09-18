@@ -1,8 +1,8 @@
 import { Bot, LoaderCircle, Shuffle, Sparkles } from "lucide-react";
-import type { Objective } from "@/app/data/lesson";
+import type { MapObjective } from "@/app/lib/knowledge-map-types";
 
 interface TopicPickerProps {
-  objectives: Objective[];
+  objectives: MapObjective[];
   selectedObjectiveId: string;
   onSelectObjectiveId: (id: string) => void;
   onPickRandom: () => void;
