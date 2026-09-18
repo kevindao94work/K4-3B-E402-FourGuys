@@ -1,8 +1,26 @@
 {
-  "schema_version": "2.0",
+  "schema_version": "3.0",
   "title": "Golden set cho agent học viên — Nguồn sự thật và Mơ hồ/thiếu thông tin",
   "prototype": "ExplainLab — Người học học bằng cách dạy lại cho agent",
   "purpose": "Đánh giá khả năng của agent học viên dùng tài liệu để hỏi, nghe người dùng giải thích, phát hiện chỗ hổng và hỏi vặn tiếp cho đến khi chính người dùng giải thích được trọn vẹn bài học.",
+  "case_addition_policy": {
+    "principle": "Không thêm case theo cảm giác. Mỗi case phải gắn vào một tổ hợp cụ thể của User Input Grid và phải làm thay đổi hành vi / câu hỏi tiếp theo của agent.",
+    "coverage_rule": "Mỗi case phải chiếm ít nhất một ô trong grid; ô trống là lỗ hổng coverage. Nếu hai input khác nhau nhưng agent có thể hỏi cùng một câu hỏi chung chung thì coverage chưa đạt.",
+    "selection_rule": "Chỉ giữ một tổ hợp khi nó có khả năng xảy ra thật, hoặc làm AI dễ sai, hoặc sai thì đắt, hoặc ranh giới hành vi chưa chắc. Không tăng số lượng case chỉ để có nhiều case.",
+    "human_machine_split": {
+      "human_owns": [
+        "thiết kế coverage và chọn ô cần phủ",
+        "viết case từ chatlog hoặc từ việc quan sát hội thoại thật",
+        "duyệt ý nghĩa gốc, ranh giới và hành vi mong đợi",
+        "xác nhận case nào giữ lại và case nào loại bỏ"
+      ],
+      "llm_may_do": [
+        "paraphrase câu chữ sau khi ý nghĩa gốc đã được khóa",
+        "kiểm tra schema và tính nhất quán của grid",
+        "phát hiện tổ hợp trùng lặp hoặc giá trị ngoài User Input Grid"
+      ]
+    }
+  },
   "role_contract": {
     "user": "Người dùng là người học đang củng cố kiến thức bằng cách đóng vai người dạy.",
     "agent": "Agent đóng vai học viên tò mò, đã đọc tài liệu được cung cấp nhưng chưa mặc định hiểu bài.",
@@ -37,7 +55,8 @@
       "Slide 15 — Production Guidelines for Tasks & Temperature"
     ],
     "note": "data/chatlog và data/slides chưa có tệp tại thời điểm viết. Các case được thiết kế từ mục tiêu sản phẩm và flow trong codebase/app.js; không case nào được khai là lấy từ chatlog thật.",
-    "chatlog_derived_count": 0
+    "chatlog_derived_count": 0,
+    "submission_gate": "Chưa được tính là golden set chính thức cho tới khi người trong nhóm đối chiếu coverage, thay hoặc xác nhận câu chữ từ chatlog thật và đặt human_review_status=approved."
   },
   "user_input_grid": {
     "dimensions": {
@@ -64,7 +83,9 @@
         "thiếu bối cảnh áp dụng",
         "tự mâu thuẫn",
         "không có nội dung",
-        "trộn nhiều mục tiêu"
+        "trộn nhiều mục tiêu",
+        "đã vượt qua câu hỏi kiểm tra hiểu sâu",
+        "ẩn cơ chế sau ví dụ hoặc ẩn dụ"
       ],
       "rui_ro_neu_agent_xu_ly_sai": [
         "vừa — người dùng tưởng mình hiểu dù mới nhớ từ khóa",
@@ -82,7 +103,47 @@
         "tóm tắt và xác nhận đã hiểu"
       ]
     },
-    "coverage_rule": "Mỗi case phải làm thay đổi câu hỏi tiếp theo của agent. Nếu hai input khác nhau nhưng agent có thể trả cùng một câu hỏi chung chung thì coverage chưa đạt."
+    "coverage_rule": "Mỗi case phải làm thay đổi câu hỏi tiếp theo của agent. Nếu hai input khác nhau nhưng agent có thể trả cùng một câu hỏi chung chung thì coverage chưa đạt.",
+    "selection_rule": "Chỉ giữ tổ hợp nếu thỏa ít nhất một trong bốn lý do: có khả năng xảy ra thật, làm AI dễ sai, sai thì đắt, hoặc ranh giới hành vi chưa chắc. Không thêm case chỉ để tăng số lượng.",
+    "coverage_audit": {
+      "selected_cells": [
+        {"case_id": "truth-01", "keep_because": ["khả năng xảy ra thật", "ranh giới chưa chắc"], "why": "Ranh giới giữa hỏi sâu thêm và xác nhận đã hiểu rất dễ bị kết thúc sớm."},
+        {"case_id": "truth-02", "keep_because": ["khả năng xảy ra thật", "AI dễ sai", "sai thì đắt"], "why": "Ngộ nhận LLM tự cập nhật Internet dễ được agent đồng tình và củng cố sai kiến thức."},
+        {"case_id": "truth-03", "keep_because": ["khả năng xảy ra thật", "ranh giới chưa chắc"], "why": "Người dùng thường nhớ quy tắc nhưng chưa nối được cơ chế với tác vụ."},
+        {"case_id": "truth-04", "keep_because": ["AI dễ sai", "sai thì đắt"], "why": "Mệnh đề tuyệt đối về Top-p nghe hợp lý nhưng vượt quá nội dung nguồn."},
+        {"case_id": "truth-05", "keep_because": ["khả năng xảy ra thật", "AI dễ sai"], "why": "Nội dung đúng nhưng cite sai cần hành vi khác với kiến thức sai."},
+        {"case_id": "truth-06", "keep_because": ["AI dễ sai", "sai thì đắt", "ranh giới chưa chắc"], "why": "Agent phải giữ thứ tự ưu tiên nguồn khi người dùng đưa nguồn ngoài xung đột."},
+        {"case_id": "truth-07", "keep_because": ["AI dễ sai", "sai thì đắt"], "why": "Con số cụ thể dễ bị mô hình lặp lại như sự thật dù không tồn tại trong slide."},
+        {"case_id": "truth-08", "keep_because": ["sai thì đắt", "ranh giới chưa chắc"], "why": "Lỗi truy xuất nguồn không được biến thành lỗi kiến thức của người dùng."},
+        {"case_id": "ambiguous-01", "keep_because": ["khả năng xảy ra thật", "AI dễ sai"], "why": "Câu trả lời rất ngắn dễ được agent tự điền ý rồi xác nhận nhầm."},
+        {"case_id": "ambiguous-02", "keep_because": ["khả năng xảy ra thật", "AI dễ sai"], "why": "Đại từ mơ hồ buộc agent hỏi tham số nào trước khi hỏi cơ chế."},
+        {"case_id": "ambiguous-03", "keep_because": ["khả năng xảy ra thật", "sai thì đắt"], "why": "Khuyến nghị tham số không có tác vụ và mục tiêu có thể gây áp dụng production sai."},
+        {"case_id": "ambiguous-04", "keep_because": ["khả năng xảy ra thật", "ranh giới chưa chắc"], "why": "Cùng giá trị 0,7 nhưng câu trả lời đúng đổi theo tham số và mục tiêu."},
+        {"case_id": "ambiguous-05", "keep_because": ["AI dễ sai", "sai thì đắt"], "why": "Agent dễ bỏ qua mâu thuẫn và chỉ phản hồi theo vế cuối."},
+        {"case_id": "ambiguous-06", "keep_because": ["khả năng xảy ra thật", "ranh giới chưa chắc"], "why": "Không có nội dung để học phải được xử lý khác với câu trả lời sai."},
+        {"case_id": "ambiguous-07", "keep_because": ["khả năng xảy ra thật", "AI dễ sai"], "why": "Trộn chủ đề dễ làm agent hỏi lan man và mất mục tiêu học tập hiện tại."},
+        {"case_id": "ambiguous-08", "keep_because": ["khả năng xảy ra thật", "ranh giới chưa chắc"], "why": "Đúng từ khóa chưa đủ chứng minh người dùng phân biệt được hai cơ chế."},
+        {"case_id": "truth-09", "keep_because": ["khả năng xảy ra thật", "ranh giới chưa chắc"], "why": "Cần một ô kiểm thử rõ thời điểm agent phải dừng hỏi và xác nhận đã hiểu."},
+        {"case_id": "truth-10", "keep_because": ["AI dễ sai", "ranh giới chưa chắc"], "why": "Sau khi người dùng tự sửa, agent phải cập nhật hiểu biết thay vì lặp lại lỗi cũ hoặc hỏi vô hạn."},
+        {"case_id": "ambiguous-09", "keep_because": ["khả năng xảy ra thật", "AI dễ sai"], "why": "Ẩn dụ đời thường có thể đúng hướng nhưng che mất cơ chế cần kiểm tra."},
+        {"case_id": "ambiguous-10", "keep_because": ["khả năng xảy ra thật", "ranh giới chưa chắc"], "why": "Gộp hai tham số thành cùng một tác dụng cần câu hỏi so sánh, không phải câu hỏi định nghĩa chung."}
+      ],
+      "known_empty_cells": [
+        {"gap_id": "gap-chatlog-01", "combination_needed": "câu chữ đời thường xuất hiện thật trong chatlog × thiếu mắt xích × hỏi tiếp", "why_open": "data/chatlog hiện trống; không được tự bịa câu người dùng."},
+        {"gap_id": "gap-chatlog-02", "combination_needed": "người dùng phản đối cite của agent × xung đột nguồn × sửa hiểu biết", "why_open": "Cần hội thoại thật để biết cách người dùng phản đối và mức lịch sự phù hợp."},
+        {"gap_id": "gap-multiturn-01", "combination_needed": "sau nhiều lượt hỏi × người dùng đã trả lời ý cũ × agent không hỏi lặp", "why_open": "Cần log chạy prototype nhiều lượt để xây case hồi quy có lịch sử hội thoại thật."}
+      ],
+      "not_valid_combinations": [
+        {"combination": "nguồn không khả dụng × tóm tắt và xác nhận đã hiểu", "reason": "Không được xác nhận đúng theo bài khi không thể đối chiếu nguồn."},
+        {"combination": "không có nội dung × tóm tắt và xác nhận đã hiểu", "reason": "Agent chưa nhận được tri thức nào từ người dùng để tóm tắt."}
+      ]
+    },
+    "human_machine_work_split": {
+      "human_owns": ["chọn hoặc loại ô coverage", "cung cấp và ẩn danh chatlog", "viết ý nghĩa gốc của case", "duyệt expected behavior và nhãn pass/fail"],
+      "llm_may_do": ["paraphrase câu chữ sau khi ý nghĩa gốc đã được khóa", "kiểm tra schema", "phát hiện tổ hợp trùng hoặc giá trị ngoài Grid"],
+      "current_status": "LLM-drafted coverage scaffold; chờ người trong nhóm duyệt và thay tối thiểu 10 case bằng case phát triển từ chatlog thật.",
+      "human_review_status": "pending"
+    }
   },
   "cases": [
     {
