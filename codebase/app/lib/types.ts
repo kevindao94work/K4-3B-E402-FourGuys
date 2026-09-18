@@ -14,6 +14,8 @@ export type SessionState = {
   turnsWithoutProgress: number;
   completed: boolean;
   paused: boolean;
+  lastQuestion?: string;
+  tutorTargetClaimId?: string;
 };
 
 export type ChatRole = "student" | "tutor" | "user" | "system";
@@ -36,8 +38,8 @@ export type AgentTrace = {
   objectiveTitle: string;
   action: string;
   summary: string;
-  promptInput: string;
-  rawResponse: string;
+  promptInput?: never;
+  rawResponse?: never;
   loggedAt: string;
   persisted: boolean;
 };
@@ -50,6 +52,8 @@ export type ChatMessage = {
   evidenceSlideIds?: string[];
   citations?: SourceCitation[];
   trace?: AgentTrace;
+  statusLabel?: string;
+  topicChoices?: { id: string; title: string }[];
 };
 
 export type LearnResult = {

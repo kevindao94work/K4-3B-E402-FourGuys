@@ -16,7 +16,7 @@ export async function GET() {
     if (!map.lesson_id || !Array.isArray(map.learning_units)) throw new Error("Invalid knowledge map");
 
     return Response.json(map, {
-      headers: { "Cache-Control": "private, max-age=3600" },
+      headers: { "Cache-Control": "no-store" },
     });
   } catch {
     return Response.json(

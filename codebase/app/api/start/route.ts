@@ -1,7 +1,7 @@
 import OpenAI from "openai";
 import { appendAiTrace } from "@/app/lib/ai-trace-log";
 import { learnerOpeningContext } from "@/app/lib/agent-context";
-import { citationsForMapClaims, loadKnowledgeMap, newSessionState, objectiveById } from "@/app/lib/server-knowledge-map";
+import { citationsForMapClaims, loadKnowledgeMap, requireSourcePdf, newSessionState, objectiveById } from "@/app/lib/server-knowledge-map";
 import { streamCompletionText, streamResponse } from "@/app/lib/sse";
 
 type LearnerQuestion = { question: string; used_claim_id: string };
@@ -36,7 +36,8 @@ export async function POST(request: Request) {
   const body = (await request.json().catch(() => ({}))) as { objectiveId?: string };
 
   return streamResponse(async (send) => {
-    const map = await loadKnowledgeMap();
+    let map;
+    try { map = await loadKnowledgeMap(); await requireSourcePdf(map); } catch { send({ type: "error", error: "Nguồn bài học không khả dụng. Hãy tải lại nguồn hoặc thử lại sau." }); return; }
     const objective = objectiveById(map, body.objectiveId ?? "");
     if (!objective) {
       send({ type: "error", error: "Hãy chọn một mục nhỏ trong cây kiến thức trước khi bắt đầu." });
@@ -53,7 +54,7 @@ export async function POST(request: Request) {
     const completion = await openai.chat.completions.create({
       model,
       temperature: 0.5,
-      max_tokens: 120,
+      max_tokens: 500,
       stream: true,
       response_format: learnerQuestionSchema,
       messages: [
@@ -80,6 +81,7 @@ export async function POST(request: Request) {
       prompt: { system: openingInstruction, input: promptInput },
       rawResponse,
     });
+    send({ type: "meta", state: { ...state, lastQuestion: response.question }, citations: citationsForMapClaims(objective, [targetClaim.id]) });
     send({ type: "trace", trace: {
       ...saved,
       agent: "learner",
@@ -87,8 +89,6 @@ export async function POST(request: Request) {
       objectiveTitle: objective.title,
       action: "Tạo câu hỏi mở đầu",
       summary: `Agent học viên hỏi đúng claim: ${targetClaim.id}.`,
-      promptInput,
-      rawResponse,
       persisted: true,
     } });
     send({ type: "delta", text: response.question.trim() });
