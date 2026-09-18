@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { lesson } from "@/app/data/lesson";
 import { allMapObjectives, type DashboardObjective, type KnowledgeMap, type MapObjective } from "@/app/lib/knowledge-map-types";
 import { peerForObjective } from "@/app/lib/learning-peer";
 import { initialState, type AgentTrace, type ChatMessage, type SessionState, type SourceCitation } from "@/app/lib/types";
@@ -94,7 +93,7 @@ export default function Home() {
   const peer = peerForObjective(currentObjective ?? selectedObjective);
 
   useEffect(() => {
-    if (!inLesson || knowledgeMap) return;
+    if (knowledgeMap) return;
     const controller = new AbortController();
     setMapLoading(true);
     setMapError("");
@@ -115,7 +114,7 @@ export default function Home() {
         }
       });
     return () => controller.abort();
-  }, [inLesson, knowledgeMap]);
+  }, [knowledgeMap]);
 
   useEffect(() => {
     if (!knowledgeMap) return;
@@ -305,7 +304,7 @@ export default function Home() {
   }, [objectives, session, tutorUsedObjectives]);
 
   if (!inLesson) {
-    return <main className="min-h-screen bg-gradient-to-b from-slate-50 via-sky-50/20 to-white text-slate-900"><CatalogHeader /><CatalogHero /><LessonCard lesson={lesson} onEnter={() => { setMapError(""); setInLesson(true); }} /></main>;
+    return <main className="min-h-screen bg-gradient-to-b from-slate-50 via-sky-50/20 to-white text-slate-900"><CatalogHeader /><CatalogHero /><LessonCard map={knowledgeMap} onEnter={() => { setMapError(""); setInLesson(true); }} /></main>;
   }
 
   return (

@@ -27,12 +27,12 @@ Nếu chưa có API key, app vẫn mở ở **chế độ xem trước** để t
 ## Source grounding
 
 - Full index trích xuất của Day 1 nằm ở `../data/ingested/d1-slide-index.md` và bị Git ignore cùng data pack.
-- App chỉ chứa Knowledge Map và các quote ngắn đã review cho 3 slide demo trong `app/data/lesson.ts`.
+- App dùng `../data/ingested/d1-knowledge-map.json` làm nguồn dữ liệu duy nhất cho mục tiêu học, claim và evidence.
 - Route `api/source-pdf` đọc file PDF local từ `../data/slides/d1-slide-hackathon.pdf`; file slide không bị sao chép vào `public/` hay source app.
 
 ## Cấu trúc chính
 
-- `app/data/lesson.ts`: Knowledge Map, evidence đã review và source bundle tĩnh.
+- `../data/ingested/d1-knowledge-map.json`: Knowledge Map, evidence đã review và metadata của bài học.
 - `app/api/learn/route.ts`: gọi Agent học viên, sau đó áp dụng policy/state bằng code.
 - `app/api/tutor/route.ts`: chỉ gọi Tutor khi user yêu cầu hoặc UI đã đề nghị.
 - `app/page.tsx`: lesson picker, chat, progress và PDF song song.

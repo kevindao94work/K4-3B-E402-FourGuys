@@ -1,12 +1,15 @@
 import { ChevronRight } from "lucide-react";
-import type { Lesson } from "@/app/data/lesson";
+import type { KnowledgeMap } from "@/app/lib/knowledge-map-types";
 
 interface LessonCardProps {
-  lesson: Lesson;
+  map: KnowledgeMap | null;
   onEnter: () => void;
 }
 
-export function LessonCard({ lesson, onEnter }: LessonCardProps) {
+export function LessonCard({ map, onEnter }: LessonCardProps) {
+  const objectives = map?.learning_units.flatMap((unit) => unit.objectives) ?? [];
+  const slideCount = map?.source?.page_count ?? new Set(map?.learning_units.flatMap((unit) => unit.slide_ids) ?? []).size;
+
   return (
     <section className="mx-auto max-w-3xl px-6 pb-20">
       <div
@@ -19,19 +22,17 @@ export function LessonCard({ lesson, onEnter }: LessonCardProps) {
         <div className="flex items-center justify-between gap-4">
           <div>
             <span className="rounded-md bg-blue-50 px-2 py-0.5 text-xs font-bold text-blue-700">
-              Day 1 · AI & LLM Foundation
+              Day 1 · {map?.title ?? "Đang tải bài học"}
             </span>
             <h3 className="mt-2 text-xl font-bold text-slate-900 group-hover:text-blue-600">
-              {lesson.title}
+              {map?.title ?? "AI & LLM Foundation"}
             </h3>
-            <p className="mt-1 text-xs text-slate-500">{lesson.subtitle}</p>
+            <p className="mt-1 text-xs text-slate-500">Tự giảng lại kiến thức theo từng mục tiêu học tập</p>
 
             <div className="mt-4 flex items-center gap-3 text-xs text-slate-500">
-              <span>⏱️ {lesson.duration}</span>
+              <span>📄 {slideCount || "…"} trang slide</span>
               <span>•</span>
-              <span>📄 {lesson.slides.length} trang slide</span>
-              <span>•</span>
-              <span>🎯 {lesson.objectives.length} chủ đề ôn tập</span>
+              <span>🎯 {objectives.length || "…"} mục tiêu ôn tập</span>
             </div>
           </div>
 

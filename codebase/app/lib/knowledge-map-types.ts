@@ -32,6 +32,13 @@ export type LearningUnit = {
 export type KnowledgeMap = {
   lesson_id: string;
   title: string;
+  source?: {
+    pdf: string;
+    slide_index: string;
+    page_count: number;
+    generated_at: string;
+    generation_method: string;
+  };
   learning_units: LearningUnit[];
   cross_unit_dependencies: [string, string][];
 };
