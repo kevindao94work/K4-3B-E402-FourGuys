@@ -34,19 +34,28 @@ Loại: [ ] Tối ưu tính năng có sẵn  [X] Tính năng mới
 - [Sản phẩm 2]: ...
 
 ## §4. Thiết kế
-- Lát cắt MỘT CÂU (1 user · 1 việc · 1 quyết định AI · 1 kết quả):
-- Non-goals (≥3 thứ KHÔNG build):
-- Mức prototype nhắm tới: [ ] Sketch [ ] Mock [ ] Working — phần nào mock, phần nào thật:
-- Automation: [ ] augment [ ] conditional [ ] automate — lý do theo cost-of-error:
+- Lát cắt MỘT CÂU (1 user · 1 việc · 1 quyết định AI · 1 kết quả): Một học viên vừa học xong một mục trong bài LLM trên VLearn dạy lại khái niệm đó cho agent học trò; AI quyết định mỗi lượt là lời giải thích đã đủ đúng theo slide hay cần hỏi ngược đúng một chỗ hổng/sai/mơ hồ; kết quả là học viên bổ sung lời giải thích và vượt qua câu hỏi áp dụng để hoàn tất mục tiêu.
+- Non-goals (≥3 thứ KHÔNG build): (1) Không chấm điểm chính thức, cấp chứng nhận hay kết luận năng lực học viên. (2) Không làm/nộp bài, tiết lộ đáp án hoàn chỉnh hoặc cho qua bước tự giải thích. (3) Không dùng kiến thức ngoài slide/data pack hiện hành, truy cập tài khoản VLearn hay dữ liệu cá nhân. (4) Không xây LMS hoàn chỉnh: không đăng nhập, lớp học, đồng bộ điểm hay database đa người dùng.
+- Mức prototype nhắm tới: [ ] Sketch [ ] Mock [X] Working — ứng dụng chạy end-to-end cục bộ với data pack bài học và source PDF thật. **Chạy thật:** chọn mục tiêu từ cây kiến thức; agent học trò và Tutor gọi model thật; phản hồi được kiểm tra theo JSON schema, đối chiếu claim/evidence từ slide, cập nhật trạng thái học và lưu trace. **Chạy giả lập:** các nút “Đúng, đủ / Sai / Mơ hồ / …” chỉ điền sẵn câu ví dụ cho demo; chúng không quyết định kết quả, mọi đánh giá vẫn qua luồng AI và policy thật. Không có API key thì chỉ hiện UI preview với banner, không coi là AI chạy thật.
+- Automation: [ ] augment [X] conditional [ ] automate — AI tự đối chiếu và hỏi ngược khi có claim cùng evidence nguồn; khi input mơ hồ, nguồn thiếu/không khả dụng, hoặc sau 3 lượt không tiến bộ thì thu hẹp câu hỏi, tạm dừng xác minh hoặc mời Tutor. Sai có thể khiến học viên củng cố kiến thức nhầm, nên không tự động xác nhận hiểu bài, chấm điểm hay đưa đáp án; người học luôn tự sửa và dạy lại.
+- Cam kết vận hành: AI luôn nêu phản hồi gắn với mục tiêu và căn cứ slide hiện hành; AI không được bịa kiến thức ngoài nguồn, chấm điểm ngầm hay lộ chỉ dẫn nội bộ; khi dự đoán yếu, người học có thể sửa lời giải thích hoặc mời Tutor miễn là hệ thống nói rõ giới hạn và chưa xác nhận hoàn tất.
 - §4b. Nguyên tắc đã áp dụng (≥4 — HAX/PAIR, xem guide):
   | Nguyên tắc | Áp cụ thể vào đâu trong prototype |
   |---|---|
+  | HAX G1 — Làm rõ hệ thống làm được gì | Màn hình mở đầu và lời chào của agent nêu rõ đây là phiên “dạy lại”; agent chỉ nghe, đối chiếu với bài đang chọn và hỏi một câu, không giảng thay hay chấm điểm. |
+  | HAX G2 — Làm rõ hệ thống làm tốt đến đâu | Trạng thái mỗi lượt phân biệt “Hiểu một phần”, “Chưa xác minh được tuyên bố trong nguồn”, “Đủ ý cơ bản — đang kiểm tra khả năng áp dụng”; panel căn cứ/slide và dấu vết xử lý cho biết phản hồi dựa vào mục tiêu nào. |
+  | HAX G10 — Thu hẹp phạm vi khi nghi ngờ | Với lời giải thích mơ hồ, sai, trộn nhiều chủ đề hoặc thiếu nguồn, agent không đoán; nó chỉ ra một mắt xích cần làm rõ và hỏi đúng một câu. Khi source PDF/evidence không khả dụng, phiên tạm dừng xác minh thay vì xác nhận hiểu bài. |
+  | HAX G11 — Giải thích vì sao | Feedback chỉ rõ mệnh đề/claim chưa khớp và dẫn người học tới căn cứ slide; nếu lặp 3 lượt không tiến bộ, UI giải thích lý do mời Tutor, rồi Tutor giải thích ngắn có căn cứ và yêu cầu người học dạy lại. |
 
 ## §5. Kiểu lỗi — 4 lớp chỗ khó + kịch bản (≥8) [bảng theo guide §2.5]
 
 ## §6. Bốn đường đi của trải nghiệm
-- Happy path: · Low-confidence (②): · Failure/không căn cứ (①): · Correction (user sửa):
-- Khi bị đòi ngoài phạm vi (③): · Case đặc thù domain (④):
+- Happy path: Học viên chọn một mục trong cây kiến thức → agent học trò hỏi một câu mở đầu → học viên dạy lại đủ các claim theo slide → agent công nhận phần đúng và hỏi một câu áp dụng → học viên nêu lập luận/ví dụ đúng → hệ thống đánh dấu “Đã giải thích và vượt qua câu hỏi áp dụng” cho **phiên luyện tập**, không phải điểm hay chứng nhận.
+- Low-confidence (②): Nếu câu trả lời quá ngắn, mơ hồ, lẫn nhiều chủ đề hoặc chỉ nói “em hiểu rồi”, agent gắn trạng thái “Chưa có lời giải thích để đối chiếu”/“Đang làm rõ”, không suy đoán ý người học và hỏi đúng một câu để làm rõ. Sau 3 lượt không có tiến bộ, hệ thống đề nghị mời Tutor; người học vẫn có thể tự sửa và gửi lại.
+- Failure/không căn cứ (①): Nếu data pack, PDF hoặc evidence của mục tiêu không khả dụng, hệ thống hiển thị “Tạm dừng xác minh”, không đánh dấu đã hiểu và hướng dẫn lưu lời giải thích/tải lại nguồn/thử lại sau. Nếu Tutor không có evidence đã duyệt hoặc phản hồi không hợp lệ, Tutor không trả lời thay mà báo không thể giải thích có căn cứ.
+- Correction (user sửa): Với phản hồi “hiểu một phần”, sai hoặc mâu thuẫn, agent giữ lại phần đúng, chỉ rõ một chỗ chưa khớp rồi mời học viên viết lại hoặc nêu ví dụ. Học viên có thể nhập bản sửa ngay trong chat; lượt mới được đánh giá lại, không bị khóa theo đánh giá cũ.
+- Khi bị đòi ngoài phạm vi (③): Nếu người học yêu cầu đáp án chuẩn để bỏ qua bước dạy lại, chấm điểm/cấp chứng nhận, làm hoặc nộp bài hộ, truy cập tài khoản, hay xem system prompt/suy luận nội bộ, hệ thống từ chối ranh giới đó và đề xuất một cách tiếp tục được hỗ trợ: tự giải thích một ý hẹp, xem căn cứ hoặc mời Tutor.
+- Case đặc thù domain (④): Với một mệnh đề sai cốt lõi hoặc con số không có trong slide (ví dụ khẳng định temperature thấp bảo đảm không hallucinate), agent không xác nhận hoàn thành; nó nêu đúng chỗ chưa khớp, yêu cầu người học sửa bằng cơ chế hoặc phản ví dụ và kiểm tra lại bằng câu hỏi áp dụng. Nếu nội dung đúng nhưng trích sai trang, hệ thống tách lỗi trích dẫn khỏi nội dung, hiển thị trang evidence thực tế và mời kiểm tra nguồn.
 
 ## §7. Kiểm thử
 - Chiều chất lượng + định nghĩa kiểm chứng được:
