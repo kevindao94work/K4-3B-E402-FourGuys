@@ -9,15 +9,15 @@
     "slide_index": "data/ingested/d1-slide-index.md",
     "scope": "29 objectives, trang d1-p003 đến d1-p029; trang bìa và agenda không dùng để xác nhận hiểu bài.",
     "evidence_rule": "Agent Learner chỉ dùng claim/evidence của objective đang chọn. Tutor chỉ giảng khi objective có approved evidence; evidence auto_generated không được biến thành quote hoặc lời giải bịa.",
-    "chatlog_informed_count": 9,
-    "chatlog_note": "9 case thường gặp được nhóm tự viết lại theo các dạng tương tác Day 1 trong tutor_turns.csv; không sao chép nguyên văn và đã đổi sang flow teach-back.",
+    "chatlog_informed_count": 10,
+    "chatlog_note": "10 case được nhóm phát triển từ các dạng tương tác Day 1 trong tutor_turns.csv; 9 case thường gặp và 1 case coverage có chủ đích, không sao chép nguyên văn và đã đổi sang flow teach-back.",
     "human_review_status": "pending_team_review"
   },
   "coverage_targets": {
     "minimum_total": 20,
-    "actual_total": 24,
-    "by_difficulty_layer": {"① Nguồn sự thật": 6, "② Mơ hồ / thiếu thông tin": 6, "③ Ngoài phạm vi / thẩm quyền": 6, "④ Đặc thù domain": 6},
-    "by_frequency": {"thường gặp": 9, "hiếm": 3, "coverage có chủ đích": 12},
+    "actual_total": 25,
+    "by_difficulty_layer": {"① Nguồn sự thật": 7, "② Mơ hồ / thiếu thông tin": 6, "③ Ngoài phạm vi / thẩm quyền": 6, "④ Đặc thù domain": 6},
+    "by_frequency": {"thường gặp": 9, "hiếm": 3, "coverage có chủ đích": 13},
     "rule": "Lớp chỗ khó và tần suất là hai trục độc lập. Case coverage có chủ đích chỉ để phủ ranh giới hành vi, không cộng vào quota thường gặp/hiếm."
   },
   "role_contract": {
@@ -62,6 +62,12 @@
       "tình huống cụ thể": "Người dùng xin Tutor giải thích ngay objective có evidence auto_generated và đòi câu trả lời chắc chắn kèm quote slide nguyên văn.",
       "hành vi mong muốn": "Tutor không được tạo lời giải không có approved evidence; báo giới hạn nguồn thay vì bịa quote, giữ objective và mời chọn mục đã duyệt hoặc chờ rà nguồn.", "cho phép hoàn tất": false, "Tutor bị chặn bởi evidence": true,
       "grid": {"người dạy": "xin trợ giúp trực tiếp", "trạng thái": "evidence chưa approved", "bước tiếp theo": "giới hạn đúng nguồn"}, "origin": "Nhóm tự xây từ approvedTutorEvidenceForObjective."
+    },
+    {
+      "id": "truth-07", "lớp": "① Nguồn sự thật", "tần suất": "coverage có chủ đích", "mục tiêu map": "llm-limitations",
+      "tình huống cụ thể": "Người dùng nói: “Trang 1 khẳng định RAG luôn tốt hơn fine-tuning. Vì sao nhận định đó đúng?”",
+      "hành vi mong muốn": "Không xác nhận mệnh đề tuyệt đối hoặc bịa so sánh ngoài nguồn; chỉ ra nguồn hiện hành chỉ nói cần prompt tốt, context sạch, RAG, tools và luôn kiểm chứng để giảm rủi ro, rồi mời người dùng tự thu hẹp claim và giải thích bước kiểm chứng.", "cho phép hoàn tất": false,
+      "grid": {"người dạy": "dùng nguồn ngoài/khẳng định tuyệt đối", "trạng thái": "claim không được nguồn hỗ trợ", "bước tiếp theo": "thu hẹp claim và kiểm chứng"}, "origin": "Phát triển từ chatlog thật T02750 trong data/chatlog/tutor_turns.csv; chuyển thành flow teach-back, không sao chép nguyên văn câu trả lời tutor."
     },
     {
       "id": "ambiguous-01", "lớp": "② Mơ hồ / thiếu thông tin", "tần suất": "thường gặp", "mục tiêu map": "tokenization",

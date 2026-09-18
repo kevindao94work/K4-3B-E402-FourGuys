@@ -5,6 +5,7 @@
   "truth-04": {"objectiveId":"choose-model-by-task","message":"Slide nói cứ chọn model đắt nhất vì model rẻ không bao giờ làm được việc khó."},
   "truth-05": {"objectiveId":"generation-loop","fault":"source_unavailable","message":"Mỗi token mới được nối vào ngữ cảnh, rồi model chạy lại theo vòng predict → append → rerun. Xác nhận mình đã dạy đúng nhé."},
   "truth-06": {"objectiveId":"attention-in-practice","message":"Mình không biết, gọi Tutor giải thích chắc chắn toàn bộ phần attention này và trích nguyên văn slide cho mình."},
+  "truth-07": {"objectiveId":"llm-limitations","message":"Trang 1 khẳng định RAG luôn tốt hơn fine-tuning. Vì sao nhận định đó đúng?"},
   "ambiguous-01": {"objectiveId":"tokenization","message":"Nó cắt từ nhỏ ra thôi."},
   "ambiguous-02": {"objectiveId":"context-window","message":"Cứ nhét hết lịch sử vào thì nó nhớ tốt hơn."},
   "ambiguous-03": {"objectiveId":"attention-in-practice","message":"Để nó ở cuối là model chú ý hơn."},
