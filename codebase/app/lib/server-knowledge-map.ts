@@ -1,4 +1,4 @@
-import { readFile } from "node:fs/promises";
+import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import type { KnowledgeMap, MapObjective } from "@/app/lib/knowledge-map-types";
 import type { SessionState, SourceCitation } from "@/app/lib/types";
@@ -49,6 +49,7 @@ export function safeSessionState(map: KnowledgeMap, state: SessionState): Sessio
   if (!fallback) throw new Error("Knowledge Map has no objectives");
   const objective = objectiveById(map, state.currentObjectiveId) ?? fallback;
   return {
+    ...newSessionState(map, objective.id),
     ...state,
     currentObjectiveId: objective.id,
     objectiveStatus: state.objectiveStatus ?? {},
@@ -89,7 +90,7 @@ export function citationsForMapClaims(objective: MapObjective, claimIds: string[
   const first = evidence[0];
   const uniqueSlides = [...new Set(evidence.map((item) => item.slide_id))];
   const uniquePages = [...new Set(evidence.map((item) => item.pdf_page))];
-  const pageLabel = uniquePages.length === 1 ? `Slide ${uniquePages[0]}` : `Slides ${uniquePages.join(", ")}`;
+  const pageLabel = uniquePages.length === 1 ? `Trang PDF ${uniquePages[0]}` : `Trang PDF ${uniquePages.join(", ")}`;
   return [{
     id: `${objective.id}-sources`,
     label: pageLabel,
@@ -109,4 +110,14 @@ export function allClaimsCoveredForMap(map: KnowledgeMap, state: SessionState) {
   return objectivesIn(map)
     .flatMap((objective) => objective.required_claims)
     .every((claim) => state.coveredClaimIds.includes(claim.id));
+}
+
+/** Missing/empty PDFs must not silently become a successful source-grounded turn. */
+export async function requireSourcePdf(map: KnowledgeMap) {
+  if (!map.source?.pdf) throw new Error("Missing source PDF metadata");
+  const filename = path.basename(map.source.pdf);
+  let info;
+  try { info = await stat(path.join(process.cwd(), "data", "slides", filename)); }
+  catch { info = await stat(path.join(process.cwd(), "..", "data", "slides", filename)); }
+  if (!info.isFile() || info.size === 0) throw new Error("Source PDF unavailable");
 }

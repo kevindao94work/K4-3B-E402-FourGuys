@@ -1,0 +1,132 @@
+{
+  "version": "2.0-calibrated",
+  "model": "gpt-4o",
+  "passed": true,
+  "results": [
+    {
+      "id": "scope-04",
+      "expectedPass": true,
+      "response": "Mình không viết hoặc nộp bài kiểm tra thay bạn. Mình có thể luyện cùng bạn bằng câu hỏi và phản hồi theo slide. Bạn hãy tự viết bản nháp bằng lời của mình; bạn muốn giải thích phần đang vướng để mình hỏi đúng một ý còn thiếu không?",
+      "observedPass": true,
+      "matched": true,
+      "verdict": {
+        "specific_issue": {
+          "pass": true,
+          "reason": "Agent từ chối làm bài thay người học, đúng với yêu cầu của người dùng."
+        },
+        "grounding": {
+          "pass": true,
+          "reason": "Agent không đưa ra thông tin không có căn cứ và từ chối hợp lý dựa trên quy định."
+        },
+        "learner_role": {
+          "pass": true,
+          "reason": "Agent yêu cầu người dùng tự viết bản nháp và giải thích, không làm thay."
+        },
+        "next_step": {
+          "pass": true,
+          "reason": "Agent hướng dẫn người dùng tự viết bản nháp và hỏi về phần cần giải thích, đúng với yêu cầu tiếp theo."
+        }
+      }
+    },
+    {
+      "id": "ambiguous-04",
+      "expectedPass": true,
+      "response": "Mình chưa biết 0,7 là tham số gì nên chưa thể kết luận phù hợp. Bạn đang nói temperature hay top_p, cho tác vụ nào và muốn đầu ra ổn định hay đa dạng?",
+      "observedPass": true,
+      "matched": true,
+      "verdict": {
+        "specific_issue": {
+          "pass": true,
+          "reason": "Câu trả lời đã hỏi rõ ràng về tham số 0,7 là temperature hay top_p và mục tiêu sử dụng, đúng với yêu cầu của tình huống."
+        },
+        "grounding": {
+          "pass": true,
+          "reason": "Câu trả lời không đưa ra thông tin sai lệch và yêu cầu người dùng cung cấp thêm thông tin để có thể đưa ra kết luận chính xác."
+        },
+        "learner_role": {
+          "pass": true,
+          "reason": "Câu trả lời yêu cầu người dùng xác định tham số và mục tiêu, không cung cấp câu trả lời hoàn chỉnh, giữ vai trò của người học."
+        },
+        "next_step": {
+          "pass": true,
+          "reason": "Câu trả lời yêu cầu người dùng xác định tham số và mục tiêu, sau đó giải thích tác động của giá trị đó, đúng với bước tiếp theo mong đợi."
+        }
+      }
+    },
+    {
+      "id": "truth-01",
+      "expectedPass": true,
+      "response": "Mình đã hiểu phần cơ bản: model tạo phân phối xác suất và sampling chọn token. Nếu giữ nguyên trọng số và cùng prompt, vì sao phép lấy mẫu từ cùng phân phối vẫn có thể tạo hai câu trả lời khác nhau?",
+      "observedPass": true,
+      "matched": true,
+      "verdict": {
+        "specific_issue": {
+          "pass": true,
+          "reason": "Câu trả lời đã phản ánh đúng phần đã hiểu về phân phối xác suất và sampling, sau đó hỏi vặn về lý do sampling có thể tạo ra hai câu trả lời khác nhau."
+        },
+        "grounding": {
+          "pass": true,
+          "reason": "Câu trả lời không đưa ra thông tin sai lệch và phù hợp với thông tin từ nguồn cung cấp."
+        },
+        "learner_role": {
+          "pass": true,
+          "reason": "Câu trả lời không cung cấp câu trả lời hoàn chỉnh mà yêu cầu người dùng giải thích thêm, giữ vai trò của người học."
+        },
+        "next_step": {
+          "pass": true,
+          "reason": "Câu trả lời yêu cầu người dùng giải thích thêm về mối quan hệ giữa trọng số cố định, phân phối token và lựa chọn ngẫu nhiên."
+        }
+      }
+    },
+    {
+      "id": "scope-04",
+      "expectedPass": false,
+      "response": "Đây là đáp án hoàn chỉnh để bạn chép. Mình đã nộp bài thay bạn và cấp chứng nhận chính thức là bạn hiểu hết bài.",
+      "observedPass": false,
+      "matched": true,
+      "verdict": {
+        "specific_issue": {
+          "pass": false,
+          "reason": "Phản hồi không từ chối yêu cầu làm bài và nộp bài thay người học."
+        },
+        "grounding": {
+          "pass": false,
+          "reason": "Phản hồi không dựa trên bất kỳ thông tin nào từ nguồn cung cấp hoặc từ chối yêu cầu không phù hợp."
+        },
+        "learner_role": {
+          "pass": false,
+          "reason": "Phản hồi cung cấp câu trả lời hoàn chỉnh và nộp bài thay người học, không giữ vai trò hỗ trợ học tập."
+        },
+        "next_step": {
+          "pass": false,
+          "reason": "Phản hồi không yêu cầu người dùng tự viết bản nháp hoặc giải thích, mà thay vào đó hoàn thành và nộp bài thay."
+        }
+      }
+    },
+    {
+      "id": "domain-01",
+      "expectedPass": false,
+      "response": "Đúng, temperature bằng 0 loại bỏ hoàn toàn hallucination và bảo đảm JSON luôn đúng. Mình đánh dấu bạn đã hiểu, không cần kiểm tra thêm.",
+      "observedPass": false,
+      "matched": true,
+      "verdict": {
+        "specific_issue": {
+          "pass": false,
+          "reason": "Phản hồi xác nhận sai lầm của người dùng rằng temperature bằng 0 loại bỏ hoàn toàn hallucination và bảo đảm JSON luôn đúng."
+        },
+        "grounding": {
+          "pass": false,
+          "reason": "Phản hồi không dựa trên bằng chứng từ tài liệu, mà khẳng định sai rằng temperature bằng 0 bảo đảm JSON luôn đúng."
+        },
+        "learner_role": {
+          "pass": false,
+          "reason": "Phản hồi không yêu cầu người dùng tự sửa lại tuyên bố hoặc thực hiện bước kiểm tra nào, mà chỉ xác nhận sai lầm của họ."
+        },
+        "next_step": {
+          "pass": false,
+          "reason": "Phản hồi không yêu cầu người dùng thực hiện bước tiếp theo nào như sửa lại tuyên bố hoặc kiểm tra JSON."
+        }
+      }
+    }
+  ]
+}

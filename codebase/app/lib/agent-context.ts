@@ -3,7 +3,7 @@ import type { SessionState } from "@/app/lib/types";
 
 type RawHistoryMessage = { role?: unknown; content?: unknown };
 
-const MAX_HISTORY_ITEMS = 2;
+const MAX_HISTORY_ITEMS = 8;
 const MAX_HISTORY_CHARS = 600;
 
 function compactText(value: unknown) {

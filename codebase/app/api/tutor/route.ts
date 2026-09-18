@@ -1,7 +1,7 @@
 import OpenAI from "openai";
 import { appendAiTrace } from "@/app/lib/ai-trace-log";
 import { approvedTutorEvidence, tutorContext } from "@/app/lib/agent-context";
-import { citationsForMapClaims, loadKnowledgeMap, objectiveById, safeSessionState } from "@/app/lib/server-knowledge-map";
+import { citationsForMapClaims, loadKnowledgeMap, requireSourcePdf, objectiveById, safeSessionState } from "@/app/lib/server-knowledge-map";
 import { streamCompletionText, streamResponse } from "@/app/lib/sse";
 import type { SessionState } from "@/app/lib/types";
 
@@ -47,11 +47,12 @@ export async function POST(request: Request) {
   if (!process.env.OPENAI_API_KEY) return Response.json({ error: "Trợ giảng cần OPENAI_API_KEY để phản hồi." }, { status: 503 });
 
   return streamResponse(async (send) => {
-    const map = await loadKnowledgeMap();
+    let map;
+    try { map = await loadKnowledgeMap(); await requireSourcePdf(map); } catch { send({ type: "error", error: "Nguồn bài học không khả dụng. Hãy tải lại nguồn hoặc thử lại sau." }); return; }
     const state = safeSessionState(map, body.state);
     const objective = objectiveById(map, state.currentObjectiveId);
     if (!objective) throw new Error("Unknown objective");
-    const targetClaim = objective.required_claims.find((claim) => !state.coveredClaimIds.includes(claim.id)) ?? objective.required_claims[0];
+    const targetClaim = objective.required_claims.find((claim) => claim.id === state.tutorTargetClaimId) ?? objective.required_claims.find((claim) => !state.coveredClaimIds.includes(claim.id)) ?? objective.required_claims[0];
     if (!targetClaim) throw new Error("Objective has no required claims");
     const approvedEvidence = approvedTutorEvidence(targetClaim);
     if (!approvedEvidence.length) {
@@ -61,7 +62,7 @@ export async function POST(request: Request) {
 
     const citations = citationsForMapClaims(objective, [targetClaim.id], true);
     const evidenceSlideIds = citations.flatMap((citation) => citation.slideIds);
-    send({ type: "meta", evidenceSlideIds, citations, state: { ...state, tutorUsed: true, awaitingRetell: true, paused: false } });
+    send({ type: "meta", evidenceSlideIds, citations, state: { ...state, tutorUsed: true, awaitingRetell: true, needsApplication: false, applicationPassed: false, completed: false, paused: false } });
 
     const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
     const promptInput = JSON.stringify(tutorContext(objective, targetClaim, body.reason, body.history));
@@ -69,7 +70,7 @@ export async function POST(request: Request) {
     const completion = await openai.chat.completions.create({
       model,
       temperature: 0.2,
-      max_tokens: 300,
+      max_tokens: 700,
       stream: true,
       response_format: tutorSchema,
       messages: [
@@ -99,7 +100,7 @@ export async function POST(request: Request) {
       ...saved, agent: "tutor", model, objectiveTitle: objective.title,
       action: "Giải thích một claim có evidence đã duyệt",
       summary: `Claim: ${targetClaim.id}; evidence: ${response.used_evidence_ids.join(", ")}.`,
-      promptInput, rawResponse, persisted: true,
+      persisted: true,
     } });
   });
 }

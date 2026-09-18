@@ -26,11 +26,11 @@ export function streamResponse(run: (send: SendEvent) => Promise<void>) {
 
         try {
           await run(send);
-          send({ type: "done" });
         } catch (error) {
           console.error("SSE route error", error);
           send({ type: "error", error: "AI chưa thể phản hồi. Hãy thử lại sau." });
         } finally {
+          send({ type: "done" });
           controller.close();
         }
       },

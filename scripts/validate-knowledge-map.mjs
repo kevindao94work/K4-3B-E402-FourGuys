@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { createHash } from "node:crypto";
 
 const root = process.cwd();
 const mapPath = path.join(root, "data", "ingested", "d1-knowledge-map.json");
@@ -16,6 +17,13 @@ for (let i = 0; i < headings.length; i += 1) {
   indexSections.set(heading[1], index.slice(start, end));
 }
 const problems = [];
+if (map.source?.sha256) {
+  const pdf = fs.readFileSync(path.join(root, map.source.pdf));
+  if (createHash("sha256").update(pdf).digest("hex") !== map.source.sha256) {
+    problems.push("Source PDF hash does not match the map");
+  }
+}
+if (slideIds.size !== map.source.page_count) problems.push("Slide index page count differs from source metadata");
 const evidence = [];
 const normalize = (value) => value
   .toLocaleLowerCase("vi-VN")
@@ -25,6 +33,7 @@ const normalize = (value) => value
   .trim();
 const unitIds = new Set(map.learning_units.map((unit) => unit.id));
 const objectiveIds = new Set();
+const claimIds = new Set();
 
 for (const unit of map.learning_units) {
   if (!unit.slide_ids?.length) problems.push(`${unit.id}: missing slide_ids`);
@@ -33,10 +42,14 @@ for (const unit of map.learning_units) {
     objectiveIds.add(objective.id);
     if (!objective.required_claims?.length) problems.push(`${objective.id}: missing required_claims`);
     for (const claim of objective.required_claims ?? []) {
+      if (claimIds.has(claim.id)) problems.push(`duplicate claim id: ${claim.id}`);
+      claimIds.add(claim.id);
       if (!claim.evidence?.length) problems.push(`${claim.id}: missing evidence`);
       for (const item of claim.evidence ?? []) {
         evidence.push(item);
         if (!slideIds.has(item.slide_id)) problems.push(`${claim.id}: unknown slide ${item.slide_id}`);
+        if (item.slide_id !== `d1-p${String(item.pdf_page).padStart(3, "0")}`) problems.push(`${claim.id}: slide ID/page mismatch`);
+        if (!unit.slide_ids.includes(item.slide_id)) problems.push(`${claim.id}: evidence outside unit slide_ids`);
         if (!item.supporting_quote?.trim()) problems.push(`${claim.id}: missing supporting_quote`);
         const slideText = indexSections.get(item.slide_id) ?? "";
         if (item.supporting_quote?.trim() && !normalize(slideText).includes(normalize(item.supporting_quote))) {
