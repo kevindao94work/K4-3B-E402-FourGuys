@@ -18,6 +18,6 @@ export function loadEvalSuite(root: string): Promise<{
   golden: { cases: Array<Record<string, unknown>> };
   fixtures: Record<string, Record<string, unknown>>;
 }>;
-export function requestRoute(baseUrl: string, route: string, body?: unknown, options?: { allowSseError?: boolean }): Promise<any>;
+export function requestRoute(baseUrl: string, route: string, body?: unknown, options?: { allowSseError?: boolean }): Promise<unknown>;
 export function runGoldenCase(options: Record<string, unknown>): Promise<EvalCaseResult>;
 export function failedChecks(result: EvalCaseResult): Array<{ name: string; reason: string }>;
