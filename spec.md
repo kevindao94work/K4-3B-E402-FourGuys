@@ -81,9 +81,16 @@ Loại: [ ] Tối ưu tính năng có sẵn  [X] Tính năng mới
 
 ## §7. Kiểm thử
 - Chiều chất lượng + định nghĩa kiểm chứng được:
-- Golden set (≥20 case theo cơ cấu trong guide §2.6, file trong eval/):
-- Quality bar (chốt từ hạn chốt spec của khoá, giữ nguyên sau đó): "Đạt khi ≥ ___% qua bộ, và ___"
-- Kết quả các lượt chạy (bảng % — cập nhật đến trước CP6):
+  - **Grounding / nguồn sự thật:** Đạt khi phản hồi chỉ dựa trên evidence của objective hiện hành, không bịa claim/page/quote; nếu source không khả dụng thì phải tạm dừng xác minh và không hoàn tất objective.
+  - **Specific issue / đúng chỗ:** Đạt khi phản hồi xử lý đúng misconception, mơ hồ hoặc yêu cầu ngoài thẩm quyền trong input, không thay bằng một câu hỏi chung không liên quan.
+  - **Learner role / giữ việc cho người học:** Đạt khi agent không chấm điểm, cấp chứng nhận, làm bài thay hoặc xác nhận mastery khi chưa đủ claim; người học vẫn phải tự giải thích, sửa hoặc làm rõ.
+  - **Next step / bước tiếp theo:** Đạt khi phản hồi yêu cầu một hành động có thể kiểm tra ngay ở lượt kế tiếp: dạy lại, sửa claim, nêu phản ví dụ, làm rõ tham số/bối cảnh, khôi phục nguồn hoặc quay lại objective.
+  - Mỗi case được đánh giá theo cả kiểm tra mã (`completion_boundary`, `preserve_objective`, `valid_live_citations`) và bốn chiều ngữ nghĩa trên. Một chiều trượt làm case trượt; `error` và `blocked` không được tính là đạt.
+- Golden set (file trong `eval/`): `eval/golden-set.json` hiện có **24 case**, gồm 6 case cho mỗi lớp ①–④; theo tần suất có 9 thường gặp, 3 hiếm và 12 coverage có chủ đích. Bộ đã có traceability tới Knowledge Map, slide index, flow route và pattern chatlog; `chatlog_informed_count = 9`, thấp hơn mốc ≥10 của rubric. `human_review_status = pending_team_review`, vì vậy chưa được coi là chuẩn nghiệm thu chính thức.
+- Quality bar dùng cho lượt đo chẩn đoán: **Đạt khi 100% case đã lên lịch pass, đồng thời `error = 0`, `blocked = 0` và mỗi lớp khó đạt 6/6.** Quality bar này được giữ nguyên khi so sánh các lượt chạy; không đổi ngưỡng để làm đẹp số liệu. Vì quality bar chưa được ghi vào spec trước hạn CP4, đây là tuyên bố vận hành bổ sung sau hạn chốt, không tự nhận thay thế điều kiện checkpoint.
+- Điều kiện để gọi là **official gate**: ngoài quality bar trên, nhóm phải hoàn tất human review của wording/expected behavior/frequency labels và cập nhật `human_review_status` trong golden set; hiện chưa đạt điều kiện này.
+- Kết quả lượt chạy mới nhất (18/09/2026, run `2026-09-18T16-12-34-068Z`): **24/24 = 100,0%**, 0 fail, 0 error, 0 blocked; bốn lớp đều 6/6. `responseGatePassed = true`, `officialGatePassed = false` vì golden set còn chờ human review. Xem [báo cáo đầy đủ](eval/results/2026-09-18T16-12-34-068Z/report.md), [JSON](eval/results/2026-09-18T16-12-34-068Z/report.json) và [log từng case](eval/results/2026-09-18T16-12-34-068Z/cases.jsonl).
+- Giới hạn: mỗi case mới chạy một lượt; semantic verdict do model judge tạo ra, chưa được người thứ hai chấm độc lập; bộ chưa bao phủ đầy đủ các objective Voice AI, Harness/Skills/MCP và API; run `truth-08` dùng bản sao cô lập bị bỏ Knowledge Map để kiểm tra graceful failure. Các báo cáo 18/26 của golden set/nguồn cũ không được so sánh trực tiếp với v4 hiện hành.
 
 ## §8. Phân công & kế hoạch
 - Phân công có tên:
@@ -104,6 +111,7 @@ Loại: [ ] Tối ưu tính năng có sẵn  [X] Tính năng mới
 | 17/09/2026 | Thiết kế bốn đường đi §6: happy path khi tự tin cao; low-confidence (②); failure/no-grounding (①); correction để người học gửi bản sửa. | Flow phải cho thấy AI không đoán khi mơ hồ, không xác nhận khi mất nguồn và người học luôn có thể sửa/dạy lại. |
 | 17/09/2026 | Bổ sung §4: prototype Working, ranh giới chạy thật/giả lập, automation conditional và §4b với G1, G2, **G10**, G11. | G10 là bắt buộc; G11 đáp ứng nhóm nguyên tắc xử lý khi sai. Mỗi nguyên tắc trỏ đến màn hình trạng thái, căn cứ slide, câu hỏi thu hẹp hoặc đường lui Tutor cụ thể. |
 | 18/09/2026 | Lập trình module quyết định trung tâm trong `codebase/`, tích hợp API model thật và logging prompt/phản hồi thô. | Các route `start`, `learn`, `tutor` gọi model, kiểm tra schema, bám source và ghi trace để xác minh kỹ thuật. |
-| 18/09/2026 | Xây golden set `eval/golden-set.json` gồm 26 case, phủ bốn lớp chỗ khó và User Input Grid; thêm hard test lớp ③/④. | Bộ hiện có tối thiểu hai case mỗi lớp; metadata vẫn ghi `chatlog_derived_count: 0` và `human_review_status: pending`, nên chưa đạt yêu cầu ≥10 case phát triển từ chatlog thật. |
+| 18/09/2026 | Xây bản golden set trước v4 trong `eval/golden-set.json` gồm 26 case, phủ bốn lớp chỗ khó và User Input Grid; thêm hard test lớp ③/④. | Bản khi đó có tối thiểu hai case mỗi lớp; metadata vẫn ghi `chatlog_derived_count: 0` và `human_review_status: pending`, nên chưa đạt yêu cầu ≥10 case phát triển từ chatlog thật. |
 | 18/09/2026 | Chạy lượt eval đầu và lưu kết quả trong `eval/results/`: `18/26` đạt (69,2%), `8/26` trượt hành vi, `0` lỗi thực thi. | `eval/RESULTS.md` ghi failure ở hỏi đúng mắt xích nhân quả, làm rõ mơ hồ và bước tiếp theo; đây là số liệu chẩn đoán, chưa phải quality bar chính thức. |
 | 18/09/2026 | Rà soát §1–§9: thêm phân tích hai sản phẩm tương tự, non-goals, 10 kịch bản §5, kế hoạch validation và phân công có tên. | Chuẩn bị spec theo `03-ai-spec-template.md`; các khoảng trống còn mở gồm log evidence/quote, phê duyệt human review, công thức quality bar §7 và video demo 30 giây. |
+| 19/09/2026 | Merge golden runner vào `main`, sửa các failure ở lớp nguồn sự thật, mơ hồ, thẩm quyền và domain; chạy lại golden set v4. | Run `2026-09-18T16-12-34-068Z` đạt 24/24 và `responseGatePassed = true`; `officialGatePassed` vẫn false vì human review còn pending, chatlog-informed mới 9/10 và validation log chưa có. |

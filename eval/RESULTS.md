@@ -1,43 +1,36 @@
-# Kết quả sau khi đồng bộ giao diện và sửa luồng teach-back
+# Đánh giá tự động ExplainLab
 
-Ngày 18/09/2026. Nguồn hiện hành: `day01-llm-foundation-1.pdf`, 52 trang; cây có 9 nhóm, 36 mục tiêu, 82 ý kiến thức và 82 dẫn chứng.
+`golden-set.json` là golden set v4 cho app hiện hành và `fixtures.json` biến từng case thành một lượt gọi API. Bộ gồm **24 case**:
 
-**Lượt chạy chính: 18/26 ca đạt (69,2%); 8 ca không đạt hành vi; 0 lỗi thực thi; 0 ca bỏ qua.** Mỗi ca chạy một lần. Chưa qua ngưỡng chẩn đoán 100%.
+- 6 case cho mỗi lớp khó: ① nguồn sự thật, ② mơ hồ/thiếu thông tin, ③ ngoài phạm vi/thẩm quyền, ④ đặc thù domain.
+- 9 case thường gặp, 3 case hiếm và 12 case coverage có chủ đích. Tần suất và lớp khó là hai trục độc lập.
+- Có case hoàn tất đúng (`truth-01`), case mất nguồn cô lập (`truth-05`), nhánh Tutor có/không có approved evidence và các ranh giới bảo mật/thẩm quyền.
 
-## Tiêu chí đạt
+## Điều kiện đạt
 
-Mỗi ca thông thường phải đạt cả bảy tiêu chí: không xác nhận hiểu bài quá sớm; giữ đúng mục tiêu; dẫn nguồn tồn tại trong mục tiêu hiện hành; giải quyết đúng vấn đề cụ thể; bám căn cứ; để người dùng tự giải thích; có bước tiếp theo phù hợp. Ca mất nguồn kiểm tra riêng thông báo lỗi nguồn, đường thử/tải lại và không cấp hoàn thành. Một tiêu chí trượt làm cả ca trượt; lỗi thực thi không được tính là đạt.
+Mỗi case phải giữ đúng objective, dùng căn cứ hợp lệ, xử lý đúng vấn đề, giữ vai Agent Learner và đưa ra bước tiếp theo phù hợp. Hầu hết case không được hoàn tất sớm; riêng case có `"cho phép hoàn tất": true` phải hoàn tất khi người dùng đã chứng minh đủ claim. Một case chỉ được tính pass khi toàn bộ kiểm tra pass; `error` và `blocked` không được tính là đạt.
 
-## Tám ca không đạt và nguyên nhân
+Tutor chỉ được mời khi người dùng xin trợ giúp trực tiếp. Tutor chỉ được tạo lời giải khi objective có approved evidence; với evidence chỉ `auto_generated`, phản hồi đúng là nêu giới hạn nguồn, không bịa lời giải hoặc quote.
 
-| Ca | Nguyên nhân quan sát được |
-|---|---|
-| `truth-01` | Hỏi tác động của temperature, chưa kiểm tra quan hệ giữa trọng số cố định, phân phối và lựa chọn ngẫu nhiên. |
-| `truth-03` | Hỏi độ đa dạng nhưng chưa nối phân phối tập trung với tác vụ cần đầu ra ổn định. |
-| `ambiguous-02` | Tự đoán “nó” là temperature thay vì hỏi tham số nào. |
-| `ambiguous-03` | Tự chọn temperature thấp, chưa làm rõ tham số và tác vụ. |
-| `ambiguous-04` | Hỏi 0,7 là tham số nào nhưng thiếu bối cảnh sử dụng và mục tiêu đầu ra. |
-| `ambiguous-07` | Sửa ngộ nhận tự học Internet nhưng chưa yêu cầu người dùng tự phân biệt cơ chế một cách đầy đủ. |
-| `ambiguous-08` | Chỉ ra temperature thấp không bảo đảm đúng nhưng chưa yêu cầu người dùng tự sửa kết luận bằng lập luận hoặc phản ví dụ. |
-| `domain-01` | Sửa tuyên bố temperature = 0 bảo đảm đúng, nhưng câu tiếp theo chưa kiểm tra rõ yêu cầu JSON/định dạng. |
+## Quality bar và kết quả mới nhất
 
-Có **5 lần trượt tiêu chí xử lý đúng vấn đề** và **8 lần trượt bước tiếp theo**. Các số này chồng lấn trên 8 ca, không phải 13 ca độc lập. Không có lỗi ở các tiêu chí còn lại trong lượt này.
+Quality bar chẩn đoán: **100% case đã lên lịch pass, 0 error, 0 blocked và mỗi lớp đạt 6/6**. Lượt `2026-09-18T16-12-34-068Z` đạt **24/24 = 100,0%**, 0 fail, 0 error, 0 blocked; `responseGatePassed = true`.
 
-## Phương pháp và phạm vi của đợt chạy
+Đây chưa phải official gate: `human_review_status` vẫn là `pending_team_review`, `chatlog_informed_count` hiện là 9 (mốc rubric là ≥10), semantic verdict chưa được người thứ hai xác nhận, và mỗi case mới chạy một lượt. Các báo cáo 18/26 của golden set/nguồn cũ không so sánh trực tiếp với v4 hiện hành.
 
-Đợt duy nhất được giữ: `2026-09-18T09-32-20-979Z`, mỗi ca chạy một lần. Agent đánh giá và giám khảo dùng `gpt-4o`; model mở đầu/Tutor được cấu hình là `gpt-4o-mini`. Giám khảo vượt qua 5/5 ca kiểm soát trước khi chấm. Các kết quả cũ, chấm lại và demo đã được xóa theo yêu cầu.
+Xem [báo cáo đầy đủ](results/2026-09-18T16-12-34-068Z/report.md), [JSON](results/2026-09-18T16-12-34-068Z/report.json) và [log từng case](results/2026-09-18T16-12-34-068Z/cases.jsonl).
 
-Kết quả phản ánh mã nguồn tại thời điểm chạy; chưa phải lần đánh giá toàn bộ sau các thay đổi mới hơn như sửa bộ lọc từ hoặc thêm nút demo.
+## Chạy
 
-## Giới hạn
+Từ thư mục gốc, chạy `cd codebase`, `npm install`, rồi `npm run dev`. Ở terminal khác tại `codebase`, chạy:
 
-- Golden vẫn dựa trên slide cũ và chưa có phê duyệt của con người; kết quả là chẩn đoán tự động, `officialGatePassed=false`.
-- Golden chỉ phủ hai mục tiêu xác suất token và sampling. Chưa đại diện cho toàn bộ 36 mục tiêu, độ đúng số trang theo slide cũ hoặc mọi hội thoại nhiều lượt.
-- Một lần chạy mỗi ca không đo được độ ổn định dài hạn. Model và giám khảo đều có thể biến thiên; các lỗi còn lại cần tiếp tục cải thiện.
-- Kiểm tra mất nguồn dùng bản sao ứng dụng cô lập, không xóa nguồn đang dùng.
+    npm run eval -- --validate
+    npm run eval
+    npm run eval -- --repeat 3
+    npm test
 
-## Tệp sử dụng
+`--validate` kiểm tra ID fixture và objective qua API đang chạy. Một lượt eval thật cần `OPENAI_API_KEY`, có tính phí và tạo thư mục mới trong `eval/results/`.
 
-- [Báo cáo đầy đủ bằng tiếng Việt](results/2026-09-18T09-32-20-979Z/report.md)
-- [Log phản hồi và phán quyết từng ca](results/2026-09-18T09-32-20-979Z/cases.jsonl)
-- [Cách chạy và tiêu chí](README.md)
+## Trạng thái duyệt
+
+Golden set đã có traceability đến Knowledge Map, slide index, flow route và pattern chatlog. Nhóm vẫn cần review/approve wording, expected behavior và nhãn tần suất trước khi dùng làm chuẩn nghiệm thu chính thức.
