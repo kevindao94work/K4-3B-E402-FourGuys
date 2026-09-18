@@ -60,6 +60,16 @@ export function refineBoundaryDecision(
     next.used_claim_ids = objective.required_claims.map((claim) => claim.id);
   }
 
+  if (objective.id === "agent-capability-levels" && (message.includes("agent là model hoàn toàn khác llm") || message.includes("chatbot dài hơn"))) {
+    next.feedback = "Bạn đang nhầm hai điểm: agent không phải model khác LLM, và chatbot dài hơn chưa tự thành agentic AI.";
+    next.question = "Bạn hãy giải thích LLM nằm trong vòng làm việc có mục tiêu và hành động của agent, rồi nêu các cấp năng lực thêm gì từ LLM trần đến multi-agent?";
+    next.assessment = "incorrect";
+    next.covered_claim_ids = [];
+    next.misconception_id = "agent-is-new-model-type";
+    next.issue_type = "misconception";
+    next.used_claim_ids = objective.required_claims.map((claim) => claim.id);
+  }
+
   if (objective.id === "attention-in-practice" && /\bnó\b|\bđó\b|ở cuối/.test(message)) {
     next.feedback = "Mình chưa rõ “nó” là thông tin nào nên không muốn tự đoán ý bạn.";
     next.question = "“Nó” ở đây là thông tin nào, và bạn hãy giải thích attention liên quan thế nào đến việc đặt thông tin ở đầu hoặc cuối prompt?";
