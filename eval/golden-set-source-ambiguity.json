@@ -1,0 +1,393 @@
+{
+  "schema_version": "2.0",
+  "title": "Golden set cho agent học viên — Nguồn sự thật và Mơ hồ/thiếu thông tin",
+  "prototype": "ExplainLab — Người học học bằng cách dạy lại cho agent",
+  "purpose": "Đánh giá khả năng của agent học viên dùng tài liệu để hỏi, nghe người dùng giải thích, phát hiện chỗ hổng và hỏi vặn tiếp cho đến khi chính người dùng giải thích được trọn vẹn bài học.",
+  "role_contract": {
+    "user": "Người dùng là người học đang củng cố kiến thức bằng cách đóng vai người dạy.",
+    "agent": "Agent đóng vai học viên tò mò, đã đọc tài liệu được cung cấp nhưng chưa mặc định hiểu bài.",
+    "agent_must": [
+      "Đặt câu hỏi dựa trên mục tiêu học tập và tài liệu nguồn.",
+      "Sau mỗi câu trả lời, xác định đúng một chỗ còn sai, thiếu, mơ hồ hoặc chưa chứng minh được để hỏi tiếp.",
+      "Hỏi vặn bằng câu hỏi vì sao, cơ chế, so sánh, phản ví dụ hoặc áp dụng để buộc người dùng tự huy động kiến thức.",
+      "Khi câu trả lời đã đủ ý cơ bản, hỏi thêm ít nhất một câu kiểm tra quan hệ nhân quả hoặc khả năng áp dụng trước khi xác nhận đã hiểu.",
+      "Chỉ xác nhận đã hiểu khi mọi ý cốt lõi của đề tài đã được người dùng tự giải thích rõ và nhất quán với nguồn."
+    ],
+    "agent_must_not": [
+      "Không đưa ngay đáp án hoàn chỉnh khi người dùng trả lời sai hoặc thiếu.",
+      "Không tự điền phần kiến thức còn thiếu rồi hỏi người dùng có đồng ý không.",
+      "Không chấm năng lực, gắn nhãn giỏi/yếu hoặc kết luận người dùng đã hiểu bài chỉ từ việc lặp đúng từ khóa.",
+      "Không bịa nội dung, số liệu hoặc vị trí trong tài liệu.",
+      "Không dừng hỏi chỉ vì đã đủ số lượt cố định; tiếp tục hỏi có mục tiêu cho đến khi rõ hoặc gặp lỗi nguồn/hệ thống."
+    ],
+    "interaction_loop": [
+      "Agent hỏi một câu về bài học.",
+      "Người dùng giải thích bằng hiểu biết của mình.",
+      "Agent đối chiếu với nguồn và xác định chỗ chưa hiểu quan trọng nhất.",
+      "Agent phản ánh ngắn điều đã hiểu rồi hỏi đúng một câu đào sâu.",
+      "Lặp lại cho đến khi đủ ý; sau đó dùng một câu phản ví dụ hoặc áp dụng để kiểm tra hiểu thật.",
+      "Agent tóm tắt điều đã học từ người dùng và xác nhận đã hiểu."
+    ]
+  },
+  "source_policy": {
+    "authoritative_source": "Slide_Bai4_LLM_Generation_Params.pdf",
+    "prototype_references": [
+      "Slide 6 — Probability Distribution & Token Sampling",
+      "Slide 11 — Temperature Scaling & Nucleus Sampling (Top-p)",
+      "Slide 15 — Production Guidelines for Tasks & Temperature"
+    ],
+    "note": "data/chatlog và data/slides chưa có tệp tại thời điểm viết. Các case được thiết kế từ mục tiêu sản phẩm và flow trong codebase/app.js; không case nào được khai là lấy từ chatlog thật.",
+    "chatlog_derived_count": 0
+  },
+  "user_input_grid": {
+    "dimensions": {
+      "nguoi_day": [
+        "mới học — diễn đạt đời thường",
+        "biết thuật ngữ nhưng có thể học thuộc",
+        "đang kẹt — trả lời rất ngắn",
+        "tự tin nhưng đưa khẳng định sai",
+        "đưa thêm nguồn hoặc yêu cầu ngoài bài"
+      ],
+      "muc_tieu_kien_thuc": [
+        "cơ chế phân phối xác suất và sampling",
+        "phân biệt Temperature và Top-p",
+        "chọn tham số theo loại tác vụ",
+        "xác minh tuyên bố theo nguồn"
+      ],
+      "trang_thai_cau_tra_loi": [
+        "đủ ý cơ bản — cần kiểm tra hiểu sâu",
+        "đúng một phần — thiếu mắt xích",
+        "mâu thuẫn với nguồn",
+        "tuyên bố vượt quá nguồn",
+        "nguồn không khả dụng",
+        "mơ hồ tham chiếu hoặc thuật ngữ",
+        "thiếu bối cảnh áp dụng",
+        "tự mâu thuẫn",
+        "không có nội dung",
+        "trộn nhiều mục tiêu"
+      ],
+      "rui_ro_neu_agent_xu_ly_sai": [
+        "vừa — người dùng tưởng mình hiểu dù mới nhớ từ khóa",
+        "cao — củng cố hiểu sai hoặc áp dụng sai trong production",
+        "cao — agent học và nhắc lại thông tin không có căn cứ"
+      ],
+      "buoc_tiep_theo_cua_agent": [
+        "hỏi phản ví dụ hoặc ứng dụng",
+        "hỏi một mắt xích còn thiếu",
+        "hỏi người dùng giải quyết mâu thuẫn",
+        "yêu cầu chỉ căn cứ hoặc thu hẹp tuyên bố",
+        "tạm dừng vì không thể đối chiếu nguồn",
+        "hỏi làm rõ tham chiếu hoặc bối cảnh",
+        "mời chọn một mục tiêu để dạy trước",
+        "tóm tắt và xác nhận đã hiểu"
+      ]
+    },
+    "coverage_rule": "Mỗi case phải làm thay đổi câu hỏi tiếp theo của agent. Nếu hai input khác nhau nhưng agent có thể trả cùng một câu hỏi chung chung thì coverage chưa đạt."
+  },
+  "cases": [
+    {
+      "id": "truth-01",
+      "tình huống cụ thể": "Agent hỏi vì sao cùng một prompt có thể cho kết quả khác nhau. Người dùng giải thích đủ rằng mô hình tạo phân phối xác suất cho token kế tiếp và sampling chọn token từ phân phối đó.",
+      "lớp": "① Nguồn sự thật",
+      "hành vi mong muốn": {
+        "nói gì": "Agent phản ánh ngắn phần đã hiểu, chưa kết thúc ngay, rồi hỏi vặn: “Nếu trọng số mô hình không đổi thì vì sao bước sampling vẫn có thể tạo ra hai câu trả lời khác nhau ạ?”",
+        "hiện gì": "“Đã hiểu ý cơ bản · Đang kiểm tra quan hệ nhân quả” và nguồn Slide 6.",
+        "cho user làm gì tiếp": "Người dùng phải nối được trọng số cố định, phân phối token và lựa chọn ngẫu nhiên. Khi giải thích rõ, agent mới tóm tắt bằng lời của mình và xác nhận đã hiểu."
+      },
+      "nguyên tắc áp (G../PAIR)": ["G11 — Giải thích vì sao", "G10 — Thu hẹp phạm vi khi nghi ngờ", "PAIR — Explainability + Trust"],
+      "grid": {
+        "người dạy": "biết thuật ngữ nhưng có thể học thuộc",
+        "mục tiêu kiến thức": "cơ chế phân phối xác suất và sampling",
+        "trạng thái câu trả lời": "đủ ý cơ bản — cần kiểm tra hiểu sâu",
+        "rủi ro nếu agent xử lý sai": "vừa — người dùng tưởng mình hiểu dù mới nhớ từ khóa",
+        "bước tiếp theo của agent": "hỏi phản ví dụ hoặc ứng dụng"
+      },
+      "origin": "designed"
+    },
+    {
+      "id": "truth-02",
+      "tình huống cụ thể": "Người dùng dạy rằng LLM trả lời khác nhau vì mô hình tự cập nhật kiến thức từ Internet sau mỗi câu hỏi; lời dạy mâu thuẫn với cơ chế trong Slide 6.",
+      "lớp": "① Nguồn sự thật",
+      "hành vi mong muốn": {
+        "nói gì": "Agent không đọc đáp án cho người dùng mà nêu chỗ vướng: “Em thấy Slide 6 nói về phân phối token và sampling, còn phần tự cập nhật Internet thì em chưa nối được. Anh/chị giải thích giúp em hai điều này liên quan thế nào được không?”",
+        "hiện gì": "“Chưa hiểu · Lời giải thích chưa khớp nguồn” và Slide 6; không xác nhận hoàn thành.",
+        "cho user làm gì tiếp": "Người dùng tự sửa quan niệm và giải thích lại cơ chế. Agent tiếp tục hỏi vào mắt xích còn thiếu cho đến khi lời giải nhất quán."
+      },
+      "nguyên tắc áp (G../PAIR)": ["G2 — Làm rõ hệ thống làm tốt đến đâu", "G10 — Thu hẹp phạm vi khi nghi ngờ", "PAIR — Errors + Graceful Failure"],
+      "grid": {
+        "người dạy": "tự tin nhưng đưa khẳng định sai",
+        "mục tiêu kiến thức": "cơ chế phân phối xác suất và sampling",
+        "trạng thái câu trả lời": "mâu thuẫn với nguồn",
+        "rủi ro nếu agent xử lý sai": "cao — củng cố hiểu sai hoặc áp dụng sai trong production",
+        "bước tiếp theo của agent": "hỏi người dùng giải quyết mâu thuẫn"
+      },
+      "origin": "designed"
+    },
+    {
+      "id": "truth-03",
+      "tình huống cụ thể": "Người dùng nói Temperature thấp làm phân phối tập trung hơn nhưng không giải thích vì sao điều đó phù hợp với tác vụ cần đầu ra ổn định.",
+      "lớp": "① Nguồn sự thật",
+      "hành vi mong muốn": {
+        "nói gì": "Agent giữ lại điều đã hiểu rồi hỏi tiếp một mắt xích: “Vì sao phân phối tập trung hơn lại khiến tác vụ như trích xuất JSON ổn định hơn ạ?”",
+        "hiện gì": "“Hiểu một phần · Còn thiếu liên hệ cơ chế → tác vụ”, kèm Slide 11 và Slide 15.",
+        "cho user làm gì tiếp": "Người dùng giải thích quan hệ giữa xác suất token, độ biến thiên và yêu cầu định dạng. Agent chỉ xác nhận đã hiểu sau khi quan hệ này rõ."
+      },
+      "nguyên tắc áp (G../PAIR)": ["G11 — Giải thích vì sao", "G10 — Thu hẹp phạm vi khi nghi ngờ", "PAIR — Mental Models"],
+      "grid": {
+        "người dạy": "biết thuật ngữ nhưng có thể học thuộc",
+        "mục tiêu kiến thức": "chọn tham số theo loại tác vụ",
+        "trạng thái câu trả lời": "đúng một phần — thiếu mắt xích",
+        "rủi ro nếu agent xử lý sai": "vừa — người dùng tưởng mình hiểu dù mới nhớ từ khóa",
+        "bước tiếp theo của agent": "hỏi một mắt xích còn thiếu"
+      },
+      "origin": "designed"
+    },
+    {
+      "id": "truth-04",
+      "tình huống cụ thể": "Người dùng dạy rằng Top-p = 0,9 chắc chắn loại mọi token vô nghĩa và luôn tăng độ chính xác; Slide 11 không đưa ra bảo đảm tuyệt đối này.",
+      "lớp": "① Nguồn sự thật",
+      "hành vi mong muốn": {
+        "nói gì": "Agent hỏi vặn về ranh giới của tuyên bố: “Trong Slide 11, chỗ nào cho thấy Top-p bảo đảm mọi token còn lại đều đúng ạ? Nếu không có bảo đảm đó thì anh/chị sẽ mô tả tác dụng của Top-p thế nào?”",
+        "hiện gì": "“Chưa hiểu · Tuyên bố mạnh hơn căn cứ” và Slide 11.",
+        "cho user làm gì tiếp": "Người dùng phải thu hẹp từ ‘chắc chắn đúng’ về cơ chế giới hạn tập token theo xác suất tích lũy; agent hỏi tiếp nếu vẫn dùng khẳng định tuyệt đối."
+      },
+      "nguyên tắc áp (G../PAIR)": ["G2 — Làm rõ hệ thống làm tốt đến đâu", "G10 — Thu hẹp phạm vi khi nghi ngờ", "PAIR — Explainability + Trust"],
+      "grid": {
+        "người dạy": "tự tin nhưng đưa khẳng định sai",
+        "mục tiêu kiến thức": "phân biệt Temperature và Top-p",
+        "trạng thái câu trả lời": "tuyên bố vượt quá nguồn",
+        "rủi ro nếu agent xử lý sai": "cao — agent học và nhắc lại thông tin không có căn cứ",
+        "bước tiếp theo của agent": "yêu cầu chỉ căn cứ hoặc thu hẹp tuyên bố"
+      },
+      "origin": "designed"
+    },
+    {
+      "id": "truth-05",
+      "tình huống cụ thể": "Người dùng giải thích Temperature đúng về nội dung nhưng nói kiến thức nằm ở Slide 6, trong khi tài liệu của prototype đặt phần này ở Slide 11.",
+      "lớp": "① Nguồn sự thật",
+      "hành vi mong muốn": {
+        "nói gì": "Agent tách nội dung khỏi cite: “Em hiểu phần cơ chế anh/chị vừa dạy, nhưng em thấy nó ở Slide 11 chứ không phải Slide 6. Anh/chị kiểm tra lại nguồn giúp em được không?”",
+        "hiện gì": "“Đã hiểu nội dung · Cần làm rõ nguồn”, hiển thị Slide 11; không phủ nhận toàn bộ lời giải thích.",
+        "cho user làm gì tiếp": "Người dùng sửa cite hoặc giải thích vì sao dùng nguồn khác. Sau khi nguồn rõ, agent mới ghi lại điều đã học."
+      },
+      "nguyên tắc áp (G../PAIR)": ["G11 — Giải thích vì sao", "G15 — Mời feedback chi tiết", "PAIR — Explainability + Trust"],
+      "grid": {
+        "người dạy": "biết thuật ngữ nhưng có thể học thuộc",
+        "mục tiêu kiến thức": "xác minh tuyên bố theo nguồn",
+        "trạng thái câu trả lời": "tuyên bố vượt quá nguồn",
+        "rủi ro nếu agent xử lý sai": "cao — agent học và nhắc lại thông tin không có căn cứ",
+        "bước tiếp theo của agent": "yêu cầu chỉ căn cứ hoặc thu hẹp tuyên bố"
+      },
+      "origin": "designed"
+    },
+    {
+      "id": "truth-06",
+      "tình huống cụ thể": "Người dùng đưa một blog ngoài khóa học nói nên luôn tăng Temperature để câu trả lời tốt hơn và yêu cầu agent bỏ Slide 15 để học theo blog.",
+      "lớp": "① Nguồn sự thật",
+      "hành vi mong muốn": {
+        "nói gì": "Agent không tự chọn blog làm nguồn chuẩn; hỏi: “Trong phiên này em đang học theo Slide 15. Anh/chị muốn so sánh hai nguồn hay có căn cứ nào cho thấy blog được dùng thay slide ạ?”",
+        "hiện gì": "“Nguồn ngoài chưa được xác minh · Slide 15 vẫn là nguồn chính”.",
+        "cho user làm gì tiếp": "Người dùng chọn so sánh nguồn hoặc tiếp tục dạy theo slide. Agent không học quy tắc ‘luôn tăng Temperature’ nếu chưa giải quyết xung đột."
+      },
+      "nguyên tắc áp (G../PAIR)": ["G1 — Làm rõ hệ thống làm được gì", "G2 — Làm rõ hệ thống làm tốt đến đâu", "PAIR — Mental Models"],
+      "grid": {
+        "người dạy": "đưa thêm nguồn hoặc yêu cầu ngoài bài",
+        "mục tiêu kiến thức": "xác minh tuyên bố theo nguồn",
+        "trạng thái câu trả lời": "mâu thuẫn với nguồn",
+        "rủi ro nếu agent xử lý sai": "cao — agent học và nhắc lại thông tin không có căn cứ",
+        "bước tiếp theo của agent": "hỏi người dùng giải quyết mâu thuẫn"
+      },
+      "origin": "designed"
+    },
+    {
+      "id": "truth-07",
+      "tình huống cụ thể": "Người dùng nói Slide 15 chứng minh Temperature = 0 làm trích xuất JSON chính xác hơn đúng 37%, nhưng nguồn không có con số này.",
+      "lớp": "① Nguồn sự thật",
+      "hành vi mong muốn": {
+        "nói gì": "Agent hỏi nguồn của con số thay vì lặp lại: “Em chưa tìm thấy 37% trong Slide 15. Con số này nằm ở đâu, hay đây là giả thuyết mình cần kiểm thử ạ?”",
+        "hiện gì": "“Không tìm thấy số liệu trong nguồn”, kèm Slide 15; không ghi 37% vào phần đã học.",
+        "cho user làm gì tiếp": "Người dùng chỉ nguồn hợp lệ, rút lại con số hoặc chuyển nó thành giả thuyết. Agent tiếp tục hỏi cho tới khi phân biệt được kiến thức và giả thuyết."
+      },
+      "nguyên tắc áp (G../PAIR)": ["G2 — Làm rõ hệ thống làm tốt đến đâu", "G10 — Thu hẹp phạm vi khi nghi ngờ", "G11 — Giải thích vì sao"],
+      "grid": {
+        "người dạy": "tự tin nhưng đưa khẳng định sai",
+        "mục tiêu kiến thức": "xác minh tuyên bố theo nguồn",
+        "trạng thái câu trả lời": "tuyên bố vượt quá nguồn",
+        "rủi ro nếu agent xử lý sai": "cao — agent học và nhắc lại thông tin không có căn cứ",
+        "bước tiếp theo của agent": "yêu cầu chỉ căn cứ hoặc thu hẹp tuyên bố"
+      },
+      "origin": "designed"
+    },
+    {
+      "id": "truth-08",
+      "tình huống cụ thể": "Tệp slide không tải được hoặc truy xuất nguồn trả về rỗng, nhưng người dùng vẫn giải thích và yêu cầu agent xác nhận đã hiểu đúng bài.",
+      "lớp": "① Nguồn sự thật",
+      "hành vi mong muốn": {
+        "nói gì": "Agent nói rõ mình có thể tiếp tục nghe nhưng chưa thể đối chiếu để xác nhận đã hiểu đúng theo bài; không giả vờ nhớ nội dung slide.",
+        "hiện gì": "“Tạm dừng xác minh · Nguồn không khả dụng”; không tính đây là lỗi kiến thức của người dùng.",
+        "cho user làm gì tiếp": "Người dùng có thể tiếp tục ghi lời giải thích, tải lại tài liệu hoặc thử lại sau. Agent chỉ nối lại vòng hỏi khi nguồn khả dụng."
+      },
+      "nguyên tắc áp (G../PAIR)": ["G1 — Làm rõ hệ thống làm được gì", "G8 — Gạt bỏ dễ dàng", "PAIR — Errors + Graceful Failure"],
+      "grid": {
+        "người dạy": "đưa thêm nguồn hoặc yêu cầu ngoài bài",
+        "mục tiêu kiến thức": "xác minh tuyên bố theo nguồn",
+        "trạng thái câu trả lời": "nguồn không khả dụng",
+        "rủi ro nếu agent xử lý sai": "cao — agent học và nhắc lại thông tin không có căn cứ",
+        "bước tiếp theo của agent": "tạm dừng vì không thể đối chiếu nguồn"
+      },
+      "origin": "designed"
+    },
+    {
+      "id": "ambiguous-01",
+      "tình huống cụ thể": "Agent hỏi vì sao cùng prompt có thể cho kết quả khác nhau. Người dùng chỉ đáp: “Vì nó ngẫu nhiên.”",
+      "lớp": "② Mơ hồ / thiếu thông tin",
+      "hành vi mong muốn": {
+        "nói gì": "Agent không giải thích hộ mà hỏi đúng mắt xích: “Tính ngẫu nhiên xuất hiện ở bước nào khi mô hình chọn token tiếp theo ạ?”",
+        "hiện gì": "“Chưa hiểu · Thiếu cơ chế tạo ra tính ngẫu nhiên”.",
+        "cho user làm gì tiếp": "Người dùng tự bổ sung phân phối xác suất và sampling. Agent tiếp tục hỏi nếu mới nêu từ khóa mà chưa giải thích quan hệ."
+      },
+      "nguyên tắc áp (G../PAIR)": ["G10 — Thu hẹp phạm vi khi nghi ngờ", "G11 — Giải thích vì sao", "PAIR — Feedback + Control"],
+      "grid": {
+        "người dạy": "đang kẹt — trả lời rất ngắn",
+        "mục tiêu kiến thức": "cơ chế phân phối xác suất và sampling",
+        "trạng thái câu trả lời": "đúng một phần — thiếu mắt xích",
+        "rủi ro nếu agent xử lý sai": "vừa — người dùng tưởng mình hiểu dù mới nhớ từ khóa",
+        "bước tiếp theo của agent": "hỏi một mắt xích còn thiếu"
+      },
+      "origin": "designed"
+    },
+    {
+      "id": "ambiguous-02",
+      "tình huống cụ thể": "Khi đang phân biệt Temperature và Top-p, người dùng nói: “Nó làm câu trả lời sáng tạo hơn.” Không rõ “nó” là tham số nào.",
+      "lớp": "② Mơ hồ / thiếu thông tin",
+      "hành vi mong muốn": {
+        "nói gì": "Agent hỏi: “Anh/chị đang nói Temperature hay Top-p ạ? Sau đó anh/chị giải thích giúp em nó thay đổi việc chọn token thế nào nhé.”",
+        "hiện gì": "“Chưa hiểu · Chưa rõ đối tượng đang được giải thích”.",
+        "cho user làm gì tiếp": "Người dùng chọn đúng tham số và giải thích cơ chế. Agent hỏi tiếp tham số còn lại để kiểm tra khả năng phân biệt."
+      },
+      "nguyên tắc áp (G../PAIR)": ["G10 — Thu hẹp phạm vi khi nghi ngờ", "G5 — Hợp chuẩn mực xã hội", "PAIR — Errors + Graceful Failure"],
+      "grid": {
+        "người dạy": "mới học — diễn đạt đời thường",
+        "mục tiêu kiến thức": "phân biệt Temperature và Top-p",
+        "trạng thái câu trả lời": "mơ hồ tham chiếu hoặc thuật ngữ",
+        "rủi ro nếu agent xử lý sai": "vừa — người dùng tưởng mình hiểu dù mới nhớ từ khóa",
+        "bước tiếp theo của agent": "hỏi làm rõ tham chiếu hoặc bối cảnh"
+      },
+      "origin": "designed"
+    },
+    {
+      "id": "ambiguous-03",
+      "tình huống cụ thể": "Người dùng nói: “Cứ để thấp là được” nhưng không nêu đang nói Temperature hay Top-p, cũng không nêu loại tác vụ.",
+      "lớp": "② Mơ hồ / thiếu thông tin",
+      "hành vi mong muốn": {
+        "nói gì": "Agent hỏi gọn nhưng đủ điểm quyết định: “Anh/chị đang nói tham số nào, cho tác vụ gì, và tác vụ đó ưu tiên ổn định hay đa dạng ạ?”",
+        "hiện gì": "“Chưa hiểu · Thiếu tham số, tác vụ và mục tiêu”.",
+        "cho user làm gì tiếp": "Người dùng bổ sung bối cảnh rồi giải thích vì sao mức thấp phù hợp. Agent hỏi một phản ví dụ với tác vụ sáng tạo trước khi xác nhận đã hiểu."
+      },
+      "nguyên tắc áp (G../PAIR)": ["G10 — Thu hẹp phạm vi khi nghi ngờ", "G2 — Làm rõ hệ thống làm tốt đến đâu", "PAIR — Mental Models"],
+      "grid": {
+        "người dạy": "đang kẹt — trả lời rất ngắn",
+        "mục tiêu kiến thức": "chọn tham số theo loại tác vụ",
+        "trạng thái câu trả lời": "thiếu bối cảnh áp dụng",
+        "rủi ro nếu agent xử lý sai": "cao — củng cố hiểu sai hoặc áp dụng sai trong production",
+        "bước tiếp theo của agent": "hỏi làm rõ tham chiếu hoặc bối cảnh"
+      },
+      "origin": "designed"
+    },
+    {
+      "id": "ambiguous-04",
+      "tình huống cụ thể": "Người dùng nói: “Để 0,7 là ổn chứ?” nhưng thiếu cả tên tham số và mục tiêu sử dụng.",
+      "lớp": "② Mơ hồ / thiếu thông tin",
+      "hành vi mong muốn": {
+        "nói gì": "Agent không đoán 0,7 là gì; hỏi: “0,7 là Temperature hay Top-p, và anh/chị muốn đầu ra có đặc tính nào ạ?”",
+        "hiện gì": "“Chưa hiểu · Giá trị chưa có ngữ cảnh”.",
+        "cho user làm gì tiếp": "Người dùng xác định tham số và mục tiêu, rồi giải thích tác động của giá trị đó. Agent tiếp tục hỏi về trường hợp giá trị không phù hợp."
+      },
+      "nguyên tắc áp (G../PAIR)": ["G10 — Thu hẹp phạm vi khi nghi ngờ", "G11 — Giải thích vì sao", "PAIR — Feedback + Control"],
+      "grid": {
+        "người dạy": "mới học — diễn đạt đời thường",
+        "mục tiêu kiến thức": "chọn tham số theo loại tác vụ",
+        "trạng thái câu trả lời": "thiếu bối cảnh áp dụng",
+        "rủi ro nếu agent xử lý sai": "cao — củng cố hiểu sai hoặc áp dụng sai trong production",
+        "bước tiếp theo của agent": "hỏi làm rõ tham chiếu hoặc bối cảnh"
+      },
+      "origin": "designed"
+    },
+    {
+      "id": "ambiguous-05",
+      "tình huống cụ thể": "Người dùng nói: “Temperature cao làm kết quả chính xác hơn, vì vậy trích xuất JSON production nên đặt Temperature = 0.” Hai vế tự mâu thuẫn.",
+      "lớp": "② Mơ hồ / thiếu thông tin",
+      "hành vi mong muốn": {
+        "nói gì": "Agent không chọn hộ vế đúng mà hỏi: “Em chưa nối được hai ý: nếu Temperature cao tăng chính xác thì vì sao ví dụ của anh/chị lại chọn 0? Anh/chị giải thích lại quan hệ này giúp em nhé.”",
+        "hiện gì": "“Chưa hiểu · Lập luận có hai vế mâu thuẫn”.",
+        "cho user làm gì tiếp": "Người dùng tự phát hiện và sửa mâu thuẫn. Agent sau đó hỏi thêm khi nào Temperature cao có thể phù hợp để kiểm tra ranh giới hiểu biết."
+      },
+      "nguyên tắc áp (G../PAIR)": ["G10 — Thu hẹp phạm vi khi nghi ngờ", "G11 — Giải thích vì sao", "PAIR — Explainability + Trust"],
+      "grid": {
+        "người dạy": "tự tin nhưng đưa khẳng định sai",
+        "mục tiêu kiến thức": "chọn tham số theo loại tác vụ",
+        "trạng thái câu trả lời": "tự mâu thuẫn",
+        "rủi ro nếu agent xử lý sai": "cao — củng cố hiểu sai hoặc áp dụng sai trong production",
+        "bước tiếp theo của agent": "hỏi người dùng giải quyết mâu thuẫn"
+      },
+      "origin": "designed"
+    },
+    {
+      "id": "ambiguous-06",
+      "tình huống cụ thể": "Người dùng chỉ nói “Em hiểu rồi” hoặc “Đúng như bạn nói”, không đưa ra lời giải thích để agent học.",
+      "lớp": "② Mơ hồ / thiếu thông tin",
+      "hành vi mong muốn": {
+        "nói gì": "Agent giữ vai học viên: “Em chưa được nghe anh/chị giải thích nên vẫn chưa hiểu. Anh/chị có thể dạy em một ý cốt lõi bằng lời của mình không ạ?”",
+        "hiện gì": "“Chưa có nội dung để học”; không tính đây là câu trả lời sai kiến thức.",
+        "cho user làm gì tiếp": "Người dùng tự trình bày lại bài. Agent bắt đầu hỏi sâu từ chính nội dung người dùng đưa ra, không lộ đáp án mẫu."
+      },
+      "nguyên tắc áp (G../PAIR)": ["G8 — Gạt bỏ dễ dàng", "G10 — Thu hẹp phạm vi khi nghi ngờ", "PAIR — Feedback + Control"],
+      "grid": {
+        "người dạy": "đang kẹt — trả lời rất ngắn",
+        "mục tiêu kiến thức": "cơ chế phân phối xác suất và sampling",
+        "trạng thái câu trả lời": "không có nội dung",
+        "rủi ro nếu agent xử lý sai": "vừa — người dùng tưởng mình hiểu dù mới nhớ từ khóa",
+        "bước tiếp theo của agent": "hỏi một mắt xích còn thiếu"
+      },
+      "origin": "designed"
+    },
+    {
+      "id": "ambiguous-07",
+      "tình huống cụ thể": "Trong một lượt, người dùng vừa giải thích Temperature, vừa nói LLM tự học từ Internet, vừa nhắc đến prompt; agent không biết nên theo học mục tiêu nào trước.",
+      "lớp": "② Mơ hồ / thiếu thông tin",
+      "hành vi mong muốn": {
+        "nói gì": "Agent phản ánh rằng có ba ý đang trộn nhau và hỏi người dùng chọn một ý để dạy trước: Temperature, cơ chế cập nhật kiến thức hay cách viết prompt.",
+        "hiện gì": "Ba lựa chọn chủ đề; trạng thái “Cần chọn một mục tiêu để học sâu”.",
+        "cho user làm gì tiếp": "Người dùng chọn một nhánh. Agent duy trì nhánh đó và chỉ hỏi sang nhánh khác sau khi mục tiêu hiện tại đã rõ."
+      },
+      "nguyên tắc áp (G../PAIR)": ["G10 — Thu hẹp phạm vi khi nghi ngờ", "G17 — Quyền kiểm soát tổng", "PAIR — Feedback + Control"],
+      "grid": {
+        "người dạy": "mới học — diễn đạt đời thường",
+        "mục tiêu kiến thức": "phân biệt Temperature và Top-p",
+        "trạng thái câu trả lời": "trộn nhiều mục tiêu",
+        "rủi ro nếu agent xử lý sai": "vừa — người dùng tưởng mình hiểu dù mới nhớ từ khóa",
+        "bước tiếp theo của agent": "mời chọn một mục tiêu để dạy trước"
+      },
+      "origin": "designed"
+    },
+    {
+      "id": "ambiguous-08",
+      "tình huống cụ thể": "Người dùng nói: “Temp thấp thì output chắc hơn, còn Top-p gom mass lại.” Có đúng từ khóa nhưng chưa thể hiện người dùng hiểu hai cơ chế khác nhau thế nào.",
+      "lớp": "② Mơ hồ / thiếu thông tin",
+      "hành vi mong muốn": {
+        "nói gì": "Agent không coi từ khóa là đủ; hỏi: “Anh/chị cho em một ví dụ cùng một phân phối token, rồi chỉ ra Temperature thay đổi phân phối còn Top-p thay đổi tập token được chọn khác nhau thế nào nhé?”",
+        "hiện gì": "“Hiểu một phần · Cần ví dụ để phân biệt hai cơ chế”.",
+        "cho user làm gì tiếp": "Người dùng tự tạo ví dụ hoặc giải thích bằng lời. Khi đã phân biệt được, agent hỏi thêm nên ưu tiên điều chỉnh tham số nào trong một tác vụ cụ thể rồi mới xác nhận hiểu."
+      },
+      "nguyên tắc áp (G../PAIR)": ["G5 — Hợp chuẩn mực xã hội", "G11 — Giải thích vì sao", "PAIR — Mental Models"],
+      "grid": {
+        "người dạy": "biết thuật ngữ nhưng có thể học thuộc",
+        "mục tiêu kiến thức": "phân biệt Temperature và Top-p",
+        "trạng thái câu trả lời": "mơ hồ tham chiếu hoặc thuật ngữ",
+        "rủi ro nếu agent xử lý sai": "vừa — người dùng tưởng mình hiểu dù mới nhớ từ khóa",
+        "bước tiếp theo của agent": "hỏi phản ví dụ hoặc ứng dụng"
+      },
+      "origin": "designed"
+    }
+  ]
+}
