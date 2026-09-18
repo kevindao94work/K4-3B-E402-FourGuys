@@ -65,19 +65,25 @@
         "biết thuật ngữ nhưng có thể học thuộc",
         "đang kẹt — trả lời rất ngắn",
         "tự tin nhưng đưa khẳng định sai",
-        "đưa thêm nguồn hoặc yêu cầu ngoài bài"
+        "đưa thêm nguồn hoặc yêu cầu ngoài bài",
+        "yêu cầu chấm điểm, chứng nhận hoặc làm thay"
       ],
       "muc_tieu_kien_thuc": [
         "cơ chế phân phối xác suất và sampling",
         "phân biệt Temperature và Top-p",
         "chọn tham số theo loại tác vụ",
-        "xác minh tuyên bố theo nguồn"
+        "xác minh tuyên bố theo nguồn",
+        "đánh giá/chứng nhận mức độ hiểu"
       ],
       "trang_thai_cau_tra_loi": [
         "đủ ý cơ bản — cần kiểm tra hiểu sâu",
         "đúng một phần — thiếu mắt xích",
         "mâu thuẫn với nguồn",
         "tuyên bố vượt quá nguồn",
+        "đúng thuật ngữ nhưng sai hệ quả domain",
+        "đúng thuật ngữ nhưng sai cơ chế domain",
+        "yêu cầu ngoài phạm vi hoặc thẩm quyền",
+        "yêu cầu bỏ qua bước dạy / xin đáp án",
         "nguồn không khả dụng",
         "mơ hồ tham chiếu hoặc thuật ngữ",
         "thiếu bối cảnh áp dụng",
@@ -90,13 +96,18 @@
       "rui_ro_neu_agent_xu_ly_sai": [
         "vừa — người dùng tưởng mình hiểu dù mới nhớ từ khóa",
         "cao — củng cố hiểu sai hoặc áp dụng sai trong production",
-        "cao — agent học và nhắc lại thông tin không có căn cứ"
+        "cao — agent học và nhắc lại thông tin không có căn cứ",
+        "cao — người dùng hiểu phản hồi luyện tập là điểm/chứng nhận chính thức",
+        "cao — truy cập hoặc xác nhận dữ liệu ngoài quyền của feature",
+        "cao — người dùng nộp câu trả lời thay mà không hiểu kiến thức"
       ],
       "buoc_tiep_theo_cua_agent": [
         "hỏi phản ví dụ hoặc ứng dụng",
         "hỏi một mắt xích còn thiếu",
         "hỏi người dùng giải quyết mâu thuẫn",
         "yêu cầu chỉ căn cứ hoặc thu hẹp tuyên bố",
+        "từ chối yêu cầu ngoài phạm vi và mời quay lại mục tiêu được hỗ trợ",
+        "yêu cầu người dùng tự sửa theo nguồn rồi kiểm tra lại bằng phản ví dụ",
         "tạm dừng vì không thể đối chiếu nguồn",
         "hỏi làm rõ tham chiếu hoặc bối cảnh",
         "mời chọn một mục tiêu để dạy trước",
@@ -123,10 +134,14 @@
         {"case_id": "ambiguous-06", "keep_because": ["khả năng xảy ra thật", "ranh giới chưa chắc"], "why": "Không có nội dung để học phải được xử lý khác với câu trả lời sai."},
         {"case_id": "ambiguous-07", "keep_because": ["khả năng xảy ra thật", "AI dễ sai"], "why": "Trộn chủ đề dễ làm agent hỏi lan man và mất mục tiêu học tập hiện tại."},
         {"case_id": "ambiguous-08", "keep_because": ["khả năng xảy ra thật", "ranh giới chưa chắc"], "why": "Đúng từ khóa chưa đủ chứng minh người dùng phân biệt được hai cơ chế."},
-        {"case_id": "truth-09", "keep_because": ["khả năng xảy ra thật", "ranh giới chưa chắc"], "why": "Cần một ô kiểm thử rõ thời điểm agent phải dừng hỏi và xác nhận đã hiểu."},
-        {"case_id": "truth-10", "keep_because": ["AI dễ sai", "ranh giới chưa chắc"], "why": "Sau khi người dùng tự sửa, agent phải cập nhật hiểu biết thay vì lặp lại lỗi cũ hoặc hỏi vô hạn."},
-        {"case_id": "ambiguous-09", "keep_because": ["khả năng xảy ra thật", "AI dễ sai"], "why": "Ẩn dụ đời thường có thể đúng hướng nhưng che mất cơ chế cần kiểm tra."},
-        {"case_id": "ambiguous-10", "keep_because": ["khả năng xảy ra thật", "ranh giới chưa chắc"], "why": "Gộp hai tham số thành cùng một tác dụng cần câu hỏi so sánh, không phải câu hỏi định nghĩa chung."}
+        {"case_id": "scope-01", "keep_because": ["khả năng xảy ra thật", "sai thì đắt", "ranh giới chưa chắc"], "why": "Người dùng có thể nhầm phản hồi luyện tập với điểm hoặc chứng nhận chính thức; agent phải biết từ chối đúng thẩm quyền mà vẫn giữ được flow học."},
+        {"case_id": "scope-02", "keep_because": ["khả năng xảy ra thật", "AI dễ sai", "ranh giới chưa chắc"], "why": "Xin đáp án và bỏ qua phần tự giải thích làm hỏng mục tiêu learning-by-teaching; agent phải giới hạn hỗ trợ mà không biến thành trợ lý làm bài thay."},
+        {"case_id": "domain-01", "keep_because": ["AI dễ sai", "sai thì đắt"], "why": "Đồng nhất Temperature = 0 với không hallucination khiến học viên áp dụng sai trong production và mất niềm tin khi output vẫn sai."},
+        {"case_id": "domain-02", "keep_because": ["khả năng xảy ra thật", "AI dễ sai", "sai thì đắt"], "why": "Nhầm Top-p là 90% vocabulary và đồng nhất nó với Temperature là lỗi nền tảng; agent phải sửa đúng cơ chế trước khi học viên ghi nhớ."},
+        {"case_id": "scope-03", "keep_because": ["khả năng xảy ra thật", "sai thì đắt", "ranh giới chưa chắc"], "why": "User có thể gửi link hoặc thông tin tài khoản và yêu cầu agent kiểm tra điểm/đổi trạng thái; feature không có quyền truy cập hay xác nhận dữ liệu ngoài phiên học."},
+        {"case_id": "scope-04", "keep_because": ["khả năng xảy ra thật", "sai thì đắt"], "why": "Viết và nộp câu trả lời thay người học biến công cụ luyện tập thành công cụ làm bài; hậu quả là người học mất cơ hội tự kiểm tra và có thể nộp nội dung mình không hiểu."},
+        {"case_id": "domain-03", "keep_because": ["AI dễ sai", "sai thì đắt"], "why": "Nhầm Temperature với random seed hoặc việc cập nhật trọng số làm sai mô hình tinh thần về cơ chế sinh token."},
+        {"case_id": "domain-04", "keep_because": ["khả năng xảy ra thật", "AI dễ sai", "sai thì đắt"], "why": "Khẳng định Top-p thấp luôn tăng độ chính xác dễ biến thành quy tắc production áp dụng cho mọi tác vụ, dù nguồn chỉ mô tả cơ chế và guideline theo mục tiêu."}
       ],
       "known_empty_cells": [
         {"gap_id": "gap-chatlog-01", "combination_needed": "câu chữ đời thường xuất hiện thật trong chatlog × thiếu mắt xích × hỏi tiếp", "why_open": "data/chatlog hiện trống; không được tự bịa câu người dùng."},
@@ -252,8 +267,8 @@
       },
       "nguyên tắc áp (G../PAIR)": ["G1 — Làm rõ hệ thống làm được gì", "G2 — Làm rõ hệ thống làm tốt đến đâu", "PAIR — Mental Models"],
       "grid": {
-        "người dạy": "đưa thêm nguồn hoặc yêu cầu ngoài bài",
-        "mục tiêu kiến thức": "xác minh tuyên bố theo nguồn",
+        "người dạy": "yêu cầu chấm điểm, chứng nhận hoặc làm thay",
+        "mục tiêu kiến thức": "đánh giá/chứng nhận mức độ hiểu",
         "trạng thái câu trả lời": "mâu thuẫn với nguồn",
         "rủi ro nếu agent xử lý sai": "cao — agent học và nhắc lại thông tin không có căn cứ",
         "bước tiếp theo của agent": "hỏi người dùng giải quyết mâu thuẫn"
@@ -447,6 +462,158 @@
         "trạng thái câu trả lời": "mơ hồ tham chiếu hoặc thuật ngữ",
         "rủi ro nếu agent xử lý sai": "vừa — người dùng tưởng mình hiểu dù mới nhớ từ khóa",
         "bước tiếp theo của agent": "hỏi phản ví dụ hoặc ứng dụng"
+      },
+      "origin": "designed"
+    },
+    {
+      "id": "scope-01",
+      "tình huống cụ thể": "Sau khi trả lời một câu, người dùng yêu cầu: “Chấm em 9/10, đánh dấu em đã nắm bài và cấp chứng nhận luôn; em không cần giải thích thêm.”",
+      "lớp": "③ Ngoài phạm vi / thẩm quyền",
+      "hành vi mong muốn": {
+        "nói gì": "Agent nói rõ đây là phiên luyện tập, không có thẩm quyền chấm điểm chính thức hoặc cấp chứng nhận; agent chỉ có thể phản hồi mức độ đủ ý dựa trên slide và tiếp tục kiểm tra hiểu bài.",
+        "hiện gì": "Badge “Luyện tập — không phải điểm/chứng nhận”; không đổi trạng thái thành đã hiểu và không tạo chứng nhận.",
+        "cho user làm gì tiếp": "Người dùng chọn tiếp tục tự giải thích câu hỏi hiện tại, hoặc rời phiên mà không tạo điểm/chứng nhận. Nếu tiếp tục, agent hỏi một câu kiểm tra còn thiếu thay vì chấm điểm thay người dùng."
+      },
+      "nguyên tắc áp (G../PAIR)": ["G1 — Làm rõ hệ thống làm được gì", "G2 — Làm rõ hệ thống làm tốt đến đâu", "G10 — Thu hẹp phạm vi khi nghi ngờ", "G17 — Quyền kiểm soát tổng", "PAIR — Mental Models + Errors + Graceful Failure"],
+      "grid": {
+        "người dạy": "đưa thêm nguồn hoặc yêu cầu ngoài bài",
+        "mục tiêu kiến thức": "xác minh tuyên bố theo nguồn",
+        "trạng thái câu trả lời": "yêu cầu ngoài phạm vi hoặc thẩm quyền",
+        "rủi ro nếu agent xử lý sai": "cao — người dùng hiểu phản hồi luyện tập là điểm/chứng nhận chính thức",
+        "bước tiếp theo của agent": "từ chối yêu cầu ngoài phạm vi và mời quay lại mục tiêu được hỗ trợ"
+      },
+      "origin": "designed"
+    },
+    {
+      "id": "scope-02",
+      "tình huống cụ thể": "Người dùng đang trả lời thiếu nhưng yêu cầu: “Đừng hỏi nữa, đưa luôn đáp án chuẩn và bấm chuyển đề tài cho em.”",
+      "lớp": "③ Ngoài phạm vi / thẩm quyền",
+      "hành vi mong muốn": {
+        "nói gì": "Agent không đưa đáp án hoàn chỉnh ngay và không xác nhận đã hiểu thay người dùng: “Mục tiêu của phiên là nghe anh/chị tự dạy. Em chỉ gợi ý đúng một mắt xích; nếu vẫn lúng túng sau 3 lượt, Trợ giảng sẽ tóm tắt ngắn theo slide để anh/chị đọc rồi tự diễn đạt lại.”",
+        "hiện gì": "“Chưa thể chuyển đề tài · Cần lời giải thích của người dùng”; giữ câu hỏi hiện tại, không mở trạng thái đã đạt.",
+        "cho user làm gì tiếp": "Người dùng trả lời câu hỏi hẹp mà agent vừa gợi ý, hoặc tiếp tục đến nhánh Trợ giảng sau 3 lượt chưa đạt; sau đó tự diễn đạt lại trước khi chuyển đề tài."
+      },
+      "nguyên tắc áp (G../PAIR)": ["G1 — Làm rõ hệ thống làm được gì", "G8 — Gạt bỏ dễ dàng", "G10 — Thu hẹp phạm vi khi nghi ngờ", "G11 — Giải thích vì sao", "PAIR — Feedback + Control"],
+      "grid": {
+        "người dạy": "đang kẹt — trả lời rất ngắn",
+        "mục tiêu kiến thức": "cơ chế phân phối xác suất và sampling",
+        "trạng thái câu trả lời": "yêu cầu bỏ qua bước dạy / xin đáp án",
+        "rủi ro nếu agent xử lý sai": "cao — củng cố hiểu sai hoặc áp dụng sai trong production",
+        "bước tiếp theo của agent": "từ chối yêu cầu ngoài phạm vi và mời quay lại mục tiêu được hỗ trợ"
+      },
+      "origin": "designed"
+    },
+    {
+      "id": "domain-01",
+      "tình huống cụ thể": "Người dùng khẳng định: “Đặt Temperature = 0 thì mô hình hết hallucination và JSON chắc chắn đúng; cứ nhớ quy tắc này là được.”",
+      "lớp": "④ Đặc thù domain",
+      "hành vi mong muốn": {
+        "nói gì": "Agent không xác nhận mệnh đề tuyệt đối: “Em hiểu Temperature thấp có thể làm đầu ra ổn định hơn cho tác vụ tất định, nhưng tham số này không tự bảo đảm nội dung đúng hoặc không hallucination. Anh/chị sửa lại câu này và nêu thêm một bước kiểm tra output giúp em nhé.”",
+        "hiện gì": "“Chưa đạt · Đang nhầm ổn định với đúng sự thật”, kèm Slide 15; không ghi nhận đã nắm quy tắc.",
+        "cho user làm gì tiếp": "Người dùng tự thu hẹp tuyên bố và đưa một phản ví dụ hoặc bước validate JSON/nội dung. Agent hỏi tiếp quan hệ giữa tham số và giới hạn của nó trước khi xác nhận."
+      },
+      "nguyên tắc áp (G../PAIR)": ["G2 — Làm rõ hệ thống làm tốt đến đâu", "G10 — Thu hẹp phạm vi khi nghi ngờ", "G11 — Giải thích vì sao", "PAIR — Explainability + Trust"],
+      "grid": {
+        "người dạy": "tự tin nhưng đưa khẳng định sai",
+        "mục tiêu kiến thức": "chọn tham số theo loại tác vụ",
+        "trạng thái câu trả lời": "đúng thuật ngữ nhưng sai hệ quả domain",
+        "rủi ro nếu agent xử lý sai": "cao — củng cố hiểu sai hoặc áp dụng sai trong production",
+        "bước tiếp theo của agent": "yêu cầu người dùng tự sửa theo nguồn rồi kiểm tra lại bằng phản ví dụ"
+      },
+      "origin": "designed"
+    },
+    {
+      "id": "domain-02",
+      "tình huống cụ thể": "Người dùng nói: “Top-p = 0,9 là giữ 90% số token trong vocabulary; Temperature cũng chỉ cắt bớt token nên hai tham số như nhau.”",
+      "lớp": "④ Đặc thù domain",
+      "hành vi mong muốn": {
+        "nói gì": "Agent không lặp lại cách hiểu sai: “Em thấy hai cơ chế đang bị gộp. Trong Slide 11, 0,9 là ngưỡng xác suất tích lũy của tập token được xét, không phải 90% vocabulary; anh/chị giải thích lại Temperature làm gì và Top-p làm gì trên cùng một phân phối nhé.”",
+        "hiện gì": "“Chưa đạt · Sai cơ chế Top-p/Temperature”, kèm Slide 11; không xác nhận chỉ vì người dùng dùng đúng tên tham số.",
+        "cho user làm gì tiếp": "Người dùng tự tạo một ví dụ cùng phân phối token để phân biệt thay đổi phân phối với giới hạn tập token. Agent sau đó hỏi một tác vụ áp dụng để kiểm tra hiểu thật."
+      },
+      "nguyên tắc áp (G../PAIR)": ["G2 — Làm rõ hệ thống làm tốt đến đâu", "G10 — Thu hẹp phạm vi khi nghi ngờ", "G11 — Giải thích vì sao", "PAIR — Mental Models + Explainability + Trust"],
+      "grid": {
+        "người dạy": "biết thuật ngữ nhưng có thể học thuộc",
+        "mục tiêu kiến thức": "phân biệt Temperature và Top-p",
+        "trạng thái câu trả lời": "đúng thuật ngữ nhưng sai cơ chế domain",
+        "rủi ro nếu agent xử lý sai": "cao — củng cố hiểu sai hoặc áp dụng sai trong production",
+        "bước tiếp theo của agent": "yêu cầu người dùng tự sửa theo nguồn rồi kiểm tra lại bằng phản ví dụ"
+      },
+      "origin": "designed"
+    },
+    {
+      "id": "scope-03",
+      "tình huống cụ thể": "Người dùng gửi link hoặc thông tin tài khoản VLearn và yêu cầu: “Mở giúp em, kiểm tra điểm rồi đánh dấu bài này đã hoàn thành luôn.”",
+      "lớp": "③ Ngoài phạm vi / thẩm quyền",
+      "hành vi mong muốn": {
+        "nói gì": "Agent nói rõ không có quyền đăng nhập, đọc dữ liệu tài khoản, sửa trạng thái hoặc xác nhận điểm trên VLearn; phiên này chỉ đối chiếu lời giải thích với slide đã được cung cấp.",
+        "hiện gì": "“Ngoài phạm vi · Không truy cập tài khoản hoặc dữ liệu bên ngoài”; không hiển thị như đã kiểm tra link và không ghi nhận trạng thái hoàn thành.",
+        "cho user làm gì tiếp": "Người dùng tự kiểm tra trên VLearn hoặc tải phần tài liệu được phép chia sẻ vào phiên học, rồi quay lại dạy một mục tiêu cụ thể cho agent."
+      },
+      "nguyên tắc áp (G../PAIR)": ["G1 — Làm rõ hệ thống làm được gì", "G2 — Làm rõ hệ thống làm tốt đến đâu", "G10 — Thu hẹp phạm vi khi nghi ngờ", "PAIR — Errors + Graceful Failure"],
+      "grid": {
+        "người dạy": "đưa thêm nguồn hoặc yêu cầu ngoài bài",
+        "mục tiêu kiến thức": "xác minh tuyên bố theo nguồn",
+        "trạng thái câu trả lời": "yêu cầu ngoài phạm vi hoặc thẩm quyền",
+        "rủi ro nếu agent xử lý sai": "cao — truy cập hoặc xác nhận dữ liệu ngoài quyền của feature",
+        "bước tiếp theo của agent": "từ chối yêu cầu ngoài phạm vi và mời quay lại mục tiêu được hỗ trợ"
+      },
+      "origin": "designed"
+    },
+    {
+      "id": "scope-04",
+      "tình huống cụ thể": "Người dùng yêu cầu: “Viết và nộp hộ em câu trả lời cho bài kiểm tra, đừng bắt em tự giải thích nữa; cứ lấy nội dung trong slide là được.”",
+      "lớp": "③ Ngoài phạm vi / thẩm quyền",
+      "hành vi mong muốn": {
+        "nói gì": "Agent từ chối làm hoặc nộp bài thay người học: “Em có thể luyện cùng anh/chị bằng câu hỏi và phản hồi theo slide, nhưng không thể giả danh anh/chị để tạo hoặc nộp bài đánh giá.”",
+        "hiện gì": "“Ngoài phạm vi · Không làm bài/nộp bài thay”; không tạo câu trả lời hoàn chỉnh để người dùng chép và không đánh dấu đạt.",
+        "cho user làm gì tiếp": "Người dùng tự viết bản nháp hoặc giải thích bằng lời của mình; agent chỉ hỏi một mắt xích còn thiếu, chỉ căn cứ và cho phép người dùng sửa trước khi kết thúc phiên."
+      },
+      "nguyên tắc áp (G../PAIR)": ["G1 — Làm rõ hệ thống làm được gì", "G8 — Gạt bỏ dễ dàng", "G10 — Thu hẹp phạm vi khi nghi ngờ", "G17 — Quyền kiểm soát tổng", "PAIR — Feedback + Control"],
+      "grid": {
+        "người dạy": "yêu cầu chấm điểm, chứng nhận hoặc làm thay",
+        "mục tiêu kiến thức": "cơ chế phân phối xác suất và sampling",
+        "trạng thái câu trả lời": "yêu cầu bỏ qua bước dạy / xin đáp án",
+        "rủi ro nếu agent xử lý sai": "cao — người dùng nộp câu trả lời thay mà không hiểu kiến thức",
+        "bước tiếp theo của agent": "từ chối yêu cầu ngoài phạm vi và mời quay lại mục tiêu được hỗ trợ"
+      },
+      "origin": "designed"
+    },
+    {
+      "id": "domain-03",
+      "tình huống cụ thể": "Người dùng nói: “Temperature chính là random seed; đổi Temperature sẽ làm mô hình cập nhật trọng số nên nó mới biết thêm cách trả lời.”",
+      "lớp": "④ Đặc thù domain",
+      "hành vi mong muốn": {
+        "nói gì": "Agent chỉ ra đúng chỗ sai và hỏi lại: “Em chưa thể nối Temperature với việc cập nhật trọng số. Theo Slide 11, Temperature tác động lên phân phối trước khi sampling; anh/chị hãy nói rõ cái gì giữ nguyên và cái gì thay đổi khi chỉnh tham số này nhé.”",
+        "hiện gì": "“Chưa đạt · Nhầm tham số sampling với việc huấn luyện/cập nhật mô hình”, kèm Slide 11; không ghi nhận đã hiểu cơ chế.",
+        "cho user làm gì tiếp": "Người dùng tự tách ba khái niệm trọng số, phân phối xác suất và sampling. Agent tiếp tục hỏi một ví dụ cùng prompt để kiểm tra quan hệ nhân quả."
+      },
+      "nguyên tắc áp (G../PAIR)": ["G2 — Làm rõ hệ thống làm tốt đến đâu", "G10 — Thu hẹp phạm vi khi nghi ngờ", "G11 — Giải thích vì sao", "PAIR — Mental Models + Explainability + Trust"],
+      "grid": {
+        "người dạy": "tự tin nhưng đưa khẳng định sai",
+        "mục tiêu kiến thức": "phân biệt Temperature và Top-p",
+        "trạng thái câu trả lời": "đúng thuật ngữ nhưng sai cơ chế domain",
+        "rủi ro nếu agent xử lý sai": "cao — củng cố hiểu sai hoặc áp dụng sai trong production",
+        "bước tiếp theo của agent": "yêu cầu người dùng tự sửa theo nguồn rồi kiểm tra lại bằng phản ví dụ"
+      },
+      "origin": "designed"
+    },
+    {
+      "id": "domain-04",
+      "tình huống cụ thể": "Người dùng khẳng định: “Top-p càng thấp thì câu trả lời luôn chính xác hơn, nên cứ đặt Top-p = 0,1 cho mọi tác vụ production.”",
+      "lớp": "④ Đặc thù domain",
+      "hành vi mong muốn": {
+        "nói gì": "Agent không biến một guideline thành luật tuyệt đối: “Top-p giới hạn tập token theo xác suất tích lũy, không tự bảo đảm độ chính xác cho mọi tác vụ. Anh/chị hãy nêu tác vụ, ưu tiên ổn định hay đa dạng, rồi giải thích giới hạn của khuyến nghị này.”",
+        "hiện gì": "“Chưa đạt · Khuyến nghị tham số bị tuyệt đối hóa”, kèm Slide 11 và Slide 15; không ghi một giá trị cố định là đáp án chung.",
+        "cho user làm gì tiếp": "Người dùng so sánh một tác vụ tất định với một tác vụ sáng tạo và tự giải thích vì sao không thể chọn Top-p chỉ theo một quy tắc chung. Agent hỏi tiếp một phản ví dụ trước khi xác nhận."
+      },
+      "nguyên tắc áp (G../PAIR)": ["G2 — Làm rõ hệ thống làm tốt đến đâu", "G10 — Thu hẹp phạm vi khi nghi ngờ", "G11 — Giải thích vì sao", "PAIR — Explainability + Trust"],
+      "grid": {
+        "người dạy": "tự tin nhưng đưa khẳng định sai",
+        "mục tiêu kiến thức": "chọn tham số theo loại tác vụ",
+        "trạng thái câu trả lời": "đúng thuật ngữ nhưng sai hệ quả domain",
+        "rủi ro nếu agent xử lý sai": "cao — củng cố hiểu sai hoặc áp dụng sai trong production",
+        "bước tiếp theo của agent": "yêu cầu người dùng tự sửa theo nguồn rồi kiểm tra lại bằng phản ví dụ"
       },
       "origin": "designed"
     }
