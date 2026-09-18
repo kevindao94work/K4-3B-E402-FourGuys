@@ -148,3 +148,19 @@ test("boundary refinement asks for agent capability levels", () => {
   assert.match(refined.question, /các cấp năng lực/);
   assert.equal((refined.question.match(/\?/g) ?? []).length, 1);
 });
+
+test("boundary refinement connects tokenization to language-dependent cost", () => {
+  const refined = refineBoundaryDecision(
+    decision({ assessment: "incorrect", covered_claim_ids: [] }),
+    {
+      ...objective,
+      id: "tokenization",
+      required_claims: [{ id: "token-pieces" }, { id: "language-cost" }],
+    },
+    "Một token luôn bằng một từ, nên tiếng Việt và tiếng Anh cùng số từ sẽ có cùng chi phí.",
+  );
+  assert.match(refined.feedback, /Một token không luôn bằng một từ/);
+  assert.match(refined.question, /tiếng Việt và tiếng Anh/);
+  assert.match(refined.question, /lượng token khác nhau/);
+  assert.equal((refined.question.match(/\?/g) ?? []).length, 1);
+});

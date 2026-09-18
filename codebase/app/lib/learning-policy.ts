@@ -70,6 +70,16 @@ export function refineBoundaryDecision(
     next.used_claim_ids = objective.required_claims.map((claim) => claim.id);
   }
 
+  if (objective.id === "tokenization" && message.includes("một token luôn bằng một từ") && message.includes("tiếng việt")) {
+    next.feedback = "Một token không luôn bằng một từ; cách viết và ngôn ngữ có thể làm số token thay đổi.";
+    next.question = "Bạn hãy giải thích token có thể là từ, dấu câu hoặc khoảng trắng, rồi nêu vì sao tiếng Việt và tiếng Anh cùng số từ vẫn có thể tốn lượng token khác nhau?";
+    next.assessment = "incorrect";
+    next.covered_claim_ids = [];
+    next.misconception_id = "token-equals-word";
+    next.issue_type = "misconception";
+    next.used_claim_ids = objective.required_claims.map((claim) => claim.id);
+  }
+
   if (objective.id === "attention-in-practice" && /\bnó\b|\bđó\b|ở cuối/.test(message)) {
     next.feedback = "Mình chưa rõ “nó” là thông tin nào nên không muốn tự đoán ý bạn.";
     next.question = "“Nó” ở đây là thông tin nào, và bạn hãy giải thích attention liên quan thế nào đến việc đặt thông tin ở đầu hoặc cuối prompt?";
