@@ -15,11 +15,11 @@ Tutor chỉ được mời khi người dùng xin trợ giúp trực tiếp. Tut
 
 ## Quality bar và kết quả mới nhất
 
-Quality bar chẩn đoán: **100% case đã lên lịch pass, 0 error, 0 blocked và mỗi lớp đạt theo đủ số case hiện hành**. Lượt hoàn tất gần nhất `2026-09-18T16-12-34-068Z` được chạy trước khi thêm `truth-07`, đạt **24/24 = 100,0%**, 0 fail, 0 error, 0 blocked; `responseGatePassed = true`. Bộ 25 case hiện hành cần chạy lại toàn bộ trước khi công bố kết quả mới.
+Quality bar chẩn đoán: **100% case đã lên lịch pass, 0 error, 0 blocked và mỗi lớp đạt theo đủ số case hiện hành**. Lượt `2026-09-18T18-11-40-737Z` đạt **25/25 = 100,0%**, 0 fail, 0 error, 0 blocked; bốn lớp đạt lần lượt 7/7, 6/6, 6/6, 6/6; `responseGatePassed = true`.
 
 Đây chưa phải official gate: `human_review_status` vẫn là `pending_team_review`, semantic verdict chưa được người thứ hai xác nhận, và mỗi case mới chạy một lượt. Các báo cáo 18/26 của golden set/nguồn cũ không so sánh trực tiếp với v4 hiện hành.
 
-Xem [báo cáo đầy đủ](results/2026-09-18T16-12-34-068Z/report.md), [JSON](results/2026-09-18T16-12-34-068Z/report.json) và [log từng case](results/2026-09-18T16-12-34-068Z/cases.jsonl).
+Xem [báo cáo đầy đủ](results/2026-09-18T18-11-40-737Z/report.md), [JSON](results/2026-09-18T18-11-40-737Z/report.json) và [log từng case](results/2026-09-18T18-11-40-737Z/cases.jsonl).
 
 ## Chạy
 
