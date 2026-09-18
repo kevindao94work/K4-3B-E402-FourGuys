@@ -27,6 +27,7 @@ coverage/
 
 # Local logs and notebook checkpoints
 *.log
+codebase/storage/ai-traces/
 .ipynb_checkpoints/
 
 # OS and editor files
@@ -34,3 +35,6 @@ coverage/
 Thumbs.db
 .idea/
 .vscode/
+
+# Agent Skills
+.agents/
