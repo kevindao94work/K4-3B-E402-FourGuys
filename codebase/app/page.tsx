@@ -14,6 +14,7 @@ import { KnowledgeTree } from "@/components/lesson/KnowledgeTree";
 import { LessonHeader } from "@/components/lesson/LessonHeader";
 import { SlideViewer } from "@/components/lesson/SlideViewer";
 import { SummaryDashboard, type DashboardStats } from "@/components/lesson/SummaryDashboard";
+import { GoldenRunPanel } from "@/components/eval/GoldenRunPanel";
 
 const STORAGE_PREFIX = "teachback-ai-v7";
 
@@ -370,6 +371,7 @@ export default function Home() {
         <p className="text-xs font-semibold text-slate-600">{knowledgeMap?.source.pdf.split("/").pop()} · {knowledgeMap?.source.page_count} trang · {objectives.length} mục tiêu</p>
         <div className="flex gap-2">
           <nav aria-label="Khu vực bài học" className="flex gap-1 xl:hidden">{([['tree','Cây kiến thức'],['slides','Slide'],['chat','Trò chuyện']] as const).map(([id,label]) => <button key={id} onClick={() => setPanel(id)} aria-pressed={panel===id} className={`rounded-lg px-3 py-2 text-xs font-bold ${panel===id?'bg-blue-600 text-white':'bg-slate-100 text-slate-700'}`}>{label}</button>)}</nav>
+          <GoldenRunPanel />
           <button onClick={() => setMapRevision(v => v + 1)} disabled={loading || mapLoading} className="rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-50">Tải lại nguồn</button>
         </div>
       </div>
