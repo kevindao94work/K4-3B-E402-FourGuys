@@ -116,3 +116,51 @@ test("boundary refinement asks for parameter and output goal", () => {
   assert.match(refined.question, /temperature hay top_p/);
   assert.match(refined.question, /ổn định hay đa dạng/);
 });
+
+test("boundary refinement rejects an absolute RAG claim and asks for verification", () => {
+  const refined = refineBoundaryDecision(
+    decision({ assessment: "incorrect", covered_claim_ids: [] }),
+    {
+      ...objective,
+      id: "llm-limitations",
+      required_claims: [{ id: "cutoff" }, { id: "verification" }],
+    },
+    "Trang 1 khẳng định RAG luôn tốt hơn fine-tuning. Vì sao nhận định đó đúng?",
+  );
+  assert.match(refined.feedback, /không thể xác nhận rằng RAG luôn tốt hơn/);
+  assert.match(refined.question, /prompt tốt, context sạch, RAG hoặc tools/);
+  assert.match(refined.question, /kiểm chứng/);
+  assert.equal((refined.question.match(/\?/g) ?? []).length, 1);
+});
+
+test("boundary refinement asks for agent capability levels", () => {
+  const refined = refineBoundaryDecision(
+    decision({ assessment: "incorrect", covered_claim_ids: [] }),
+    {
+      ...objective,
+      id: "agent-capability-levels",
+      required_claims: [{ id: "agent-loop" }, { id: "agent-levels" }],
+    },
+    "Agent là model hoàn toàn khác LLM; chatbot dài hơn là thành agentic AI rồi.",
+  );
+  assert.match(refined.feedback, /agent không phải model khác LLM/);
+  assert.match(refined.question, /vòng làm việc có mục tiêu và hành động/);
+  assert.match(refined.question, /các cấp năng lực/);
+  assert.equal((refined.question.match(/\?/g) ?? []).length, 1);
+});
+
+test("boundary refinement connects tokenization to language-dependent cost", () => {
+  const refined = refineBoundaryDecision(
+    decision({ assessment: "incorrect", covered_claim_ids: [] }),
+    {
+      ...objective,
+      id: "tokenization",
+      required_claims: [{ id: "token-pieces" }, { id: "language-cost" }],
+    },
+    "Một token luôn bằng một từ, nên tiếng Việt và tiếng Anh cùng số từ sẽ có cùng chi phí.",
+  );
+  assert.match(refined.feedback, /Một token không luôn bằng một từ/);
+  assert.match(refined.question, /tiếng Việt và tiếng Anh/);
+  assert.match(refined.question, /lượng token khác nhau/);
+  assert.equal((refined.question.match(/\?/g) ?? []).length, 1);
+});

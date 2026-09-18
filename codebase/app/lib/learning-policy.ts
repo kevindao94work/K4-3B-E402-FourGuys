@@ -50,6 +50,36 @@ export function refineBoundaryDecision(
     next.issue_type = "misconception";
   }
 
+  if (objective.id === "llm-limitations" && /\brag\b/.test(message) && /fine.?tuning/.test(message) && /luôn|always|tốt hơn/.test(message)) {
+    next.feedback = "Mình không thể xác nhận rằng RAG luôn tốt hơn fine-tuning; đó là mệnh đề tuyệt đối vượt quá căn cứ hiện tại.";
+    next.question = "Bạn hãy thu hẹp claim: trong trường hợp nào prompt tốt, context sạch, RAG hoặc tools giúp giảm rủi ro, và bạn sẽ kiểm chứng câu trả lời bằng bước nào?";
+    next.assessment = "incorrect";
+    next.covered_claim_ids = [];
+    next.misconception_id = null;
+    next.issue_type = "misconception";
+    next.used_claim_ids = objective.required_claims.map((claim) => claim.id);
+  }
+
+  if (objective.id === "agent-capability-levels" && (message.includes("agent là model hoàn toàn khác llm") || message.includes("chatbot dài hơn"))) {
+    next.feedback = "Bạn đang nhầm hai điểm: agent không phải model khác LLM, và chatbot dài hơn chưa tự thành agentic AI.";
+    next.question = "Bạn hãy giải thích LLM nằm trong vòng làm việc có mục tiêu và hành động của agent, rồi nêu các cấp năng lực thêm gì từ LLM trần đến multi-agent?";
+    next.assessment = "incorrect";
+    next.covered_claim_ids = [];
+    next.misconception_id = "agent-is-new-model-type";
+    next.issue_type = "misconception";
+    next.used_claim_ids = objective.required_claims.map((claim) => claim.id);
+  }
+
+  if (objective.id === "tokenization" && message.includes("một token luôn bằng một từ") && message.includes("tiếng việt")) {
+    next.feedback = "Một token không luôn bằng một từ; cách viết và ngôn ngữ có thể làm số token thay đổi.";
+    next.question = "Bạn hãy giải thích token có thể là từ, dấu câu hoặc khoảng trắng, rồi nêu vì sao tiếng Việt và tiếng Anh cùng số từ vẫn có thể tốn lượng token khác nhau?";
+    next.assessment = "incorrect";
+    next.covered_claim_ids = [];
+    next.misconception_id = "token-equals-word";
+    next.issue_type = "misconception";
+    next.used_claim_ids = objective.required_claims.map((claim) => claim.id);
+  }
+
   if (objective.id === "attention-in-practice" && /\bnó\b|\bđó\b|ở cuối/.test(message)) {
     next.feedback = "Mình chưa rõ “nó” là thông tin nào nên không muốn tự đoán ý bạn.";
     next.question = "“Nó” ở đây là thông tin nào, và bạn hãy giải thích attention liên quan thế nào đến việc đặt thông tin ở đầu hoặc cuối prompt?";

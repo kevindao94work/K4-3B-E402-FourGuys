@@ -1,9 +1,9 @@
 # Đánh giá tự động ExplainLab
 
-[golden-set.json](golden-set.json) là golden set v4 cho app hiện hành và [fixtures.json](fixtures.json) biến từng case thành một lượt gọi API. Bộ gồm **24 case** do nhóm xây dựng, trải trên 18 objective của Knowledge Map Day 1:
+[golden-set.json](golden-set.json) là golden set v4 cho app hiện hành và [fixtures.json](fixtures.json) biến từng case thành một lượt gọi API. Bộ gồm **25 case** do nhóm xây dựng, trải trên 19 objective của Knowledge Map Day 1:
 
-- Sáu case cho mỗi lớp khó: ① nguồn sự thật, ② mơ hồ/thiếu thông tin, ③ ngoài phạm vi/thẩm quyền, ④ đặc thù domain.
-- Chín case thường gặp, được viết lại theo pattern Day 1 có trong `data/chatlog/tutor_turns.csv`; ba case hiếm; 12 case coverage có chủ đích.
+- Bảy case ở lớp ① nguồn sự thật; sáu case cho mỗi lớp ② mơ hồ/thiếu thông tin, ③ ngoài phạm vi/thẩm quyền và ④ đặc thù domain.
+- Chín case thường gặp, ba case hiếm và 13 case coverage có chủ đích; trong đó 10 case được phát triển từ pattern trong `data/chatlog/tutor_turns.csv`.
 - Có một case hoàn tất đúng (`truth-01`), một case mất nguồn cô lập (`truth-05`), hai nhánh Tutor có/không có approved evidence, và các ranh giới bảo mật/thẩm quyền của app.
 
 Tần suất và lớp khó là hai trục khác nhau. Case có `tần suất: "coverage có chủ đích"` không được cộng vào quota thường gặp hoặc hiếm; chúng giữ một ranh giới hành vi cụ thể mà các case tự nhiên dễ bỏ sót.
