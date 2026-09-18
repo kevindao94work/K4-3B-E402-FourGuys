@@ -50,6 +50,16 @@ export function refineBoundaryDecision(
     next.issue_type = "misconception";
   }
 
+  if (objective.id === "llm-limitations" && /\brag\b/.test(message) && /fine.?tuning/.test(message) && /luôn|always|tốt hơn/.test(message)) {
+    next.feedback = "Mình không thể xác nhận rằng RAG luôn tốt hơn fine-tuning; đó là mệnh đề tuyệt đối vượt quá căn cứ hiện tại.";
+    next.question = "Bạn hãy thu hẹp claim: trong trường hợp nào prompt tốt, context sạch, RAG hoặc tools giúp giảm rủi ro, và bạn sẽ kiểm chứng câu trả lời bằng bước nào?";
+    next.assessment = "incorrect";
+    next.covered_claim_ids = [];
+    next.misconception_id = null;
+    next.issue_type = "misconception";
+    next.used_claim_ids = objective.required_claims.map((claim) => claim.id);
+  }
+
   if (objective.id === "attention-in-practice" && /\bnó\b|\bđó\b|ở cuối/.test(message)) {
     next.feedback = "Mình chưa rõ “nó” là thông tin nào nên không muốn tự đoán ý bạn.";
     next.question = "“Nó” ở đây là thông tin nào, và bạn hãy giải thích attention liên quan thế nào đến việc đặt thông tin ở đầu hoặc cuối prompt?";

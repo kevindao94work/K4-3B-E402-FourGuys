@@ -116,3 +116,19 @@ test("boundary refinement asks for parameter and output goal", () => {
   assert.match(refined.question, /temperature hay top_p/);
   assert.match(refined.question, /ổn định hay đa dạng/);
 });
+
+test("boundary refinement rejects an absolute RAG claim and asks for verification", () => {
+  const refined = refineBoundaryDecision(
+    decision({ assessment: "incorrect", covered_claim_ids: [] }),
+    {
+      ...objective,
+      id: "llm-limitations",
+      required_claims: [{ id: "cutoff" }, { id: "verification" }],
+    },
+    "Trang 1 khẳng định RAG luôn tốt hơn fine-tuning. Vì sao nhận định đó đúng?",
+  );
+  assert.match(refined.feedback, /không thể xác nhận rằng RAG luôn tốt hơn/);
+  assert.match(refined.question, /prompt tốt, context sạch, RAG hoặc tools/);
+  assert.match(refined.question, /kiểm chứng/);
+  assert.equal((refined.question.match(/\?/g) ?? []).length, 1);
+});
