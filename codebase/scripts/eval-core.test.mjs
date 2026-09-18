@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {parseSse,validateVerdict,summarize} from './eval-core.mjs';
+import {failedChecks} from './eval-runner.mjs';
 test('does not accept truncated streams or error events even with HTTP 200',()=>{
  assert.throws(()=>parseSse('data: {"type":"meta","state":{}}\n\n'),/missing done/);
  assert.throws(()=>parseSse('data: {"type":"error","error":"upstream failure"}\n\ndata: {"type":"done"}\n\n'),/upstream failure/);
@@ -15,4 +16,12 @@ test('malformed judge decisions never become passes',()=>{
 });
 test('blocked and infrastructure errors stay in denominator and separate from failures',()=>{
  assert.deepEqual(summarize(['pass','fail','error','blocked'].map(status=>({status}))),{pass:1,fail:1,error:1,blocked:1,total:4,passRate:0.25});
+});
+test('case result exposes only failed checks for a concise explanation',()=>{
+ assert.deepEqual(failedChecks({checks:[
+  {name:'grounding',pass:false,reason:'Cần giữ căn cứ nguồn.'},
+  {name:'next_step',pass:true,reason:'Đã hỏi bước tiếp theo.'},
+ ]}),[
+  {name:'grounding',reason:'Cần giữ căn cứ nguồn.'},
+ ]);
 });
