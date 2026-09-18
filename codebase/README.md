@@ -26,6 +26,25 @@ Bạn có thể chỉnh file bằng VS Code hoặc chạy `open -a TextEdit .env
 
 Sau đó mở [http://localhost:3000](http://localhost:3000) trong trình duyệt. Dừng server bằng `Control + C` trong Terminal.
 
+## Chạy golden test trong app
+
+Sau khi vào màn hình bài học, bấm **Chạy golden test** ở thanh trên cùng. Panel sẽ chạy các case hiện hành và hiển thị:
+
+- số case đạt, không đạt, lỗi và tỷ lệ pass;
+- input/câu hỏi gửi cho Agent Learner;
+- phản hồi thực tế của agent;
+- các check không đạt cùng lý do giải thích.
+
+Nút này chỉ bật khi chạy local/demo. Kết quả trong app là kết quả chẩn đoán của phiên hiện tại; để lưu `metadata.json`, `cases.jsonl`, `report.json` và `report.md`, vẫn chạy evaluator CLI trong thư mục gốc theo `eval/README.md`.
+
+Có thể chạy riêng một case để debug:
+
+```bash
+npm run eval:case -- ambiguous-04
+```
+
+Lệnh này cần app đang chạy, `OPENAI_API_KEY` và `EVAL_JUDGE_MODEL` nếu muốn dùng model judge.
+
 Để kiểm tra trước khi chạy, có thể dùng:
 
 ```bash
