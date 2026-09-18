@@ -3,6 +3,9 @@ export type StreamEvent =
   | { type: "delta"; text: string }
   | { type: "trace"; trace: unknown }
   | { type: "error"; error: string }
+  | { type: "eval_started"; total: number; caseIds: string[] }
+  | { type: "eval_case"; result: unknown; completed: number; total: number }
+  | { type: "eval_complete"; summary: unknown; results: unknown[] }
   | { type: "done" };
 
 type SendEvent = (event: StreamEvent) => void;
