@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { advanceLearning, isTurnDecision } from "../app/lib/learning-policy.ts";
+import { advanceLearning, isTurnDecision, refineBoundaryDecision } from "../app/lib/learning-policy.ts";
 import { initialState } from "./eval-core.mjs";
 
 const objective = {
@@ -84,4 +84,35 @@ test("complete and misconception labels cannot coexist", () => {
   assert.equal(isTurnDecision(decision({ assessment: "uncertain" }), objective), false);
   assert.equal(isTurnDecision(decision({ covered_claim_ids: ["foreign"] }), objective), false);
   assert.equal(isTurnDecision(decision(), objective), true);
+});
+
+test("boundary refinement asks for the missing hierarchy claims", () => {
+  const refined = refineBoundaryDecision(
+    decision({ assessment: "incorrect", covered_claim_ids: [], used_claim_ids: ["a"] }),
+    { ...objective, id: "ai-hierarchy", required_claims: [{ id: "hierarchy" }, { id: "ml-source" }] },
+    "LLM là toàn bộ AI, còn ML chỉ là tên khác của deep learning.",
+  );
+  assert.match(refined.feedback, /LLM không phải toàn bộ AI/);
+  assert.match(refined.question, /ML học từ đâu/);
+  assert.equal((refined.question.match(/\?/g) ?? []).length, 1);
+});
+
+test("boundary refinement does not guess an ambiguous referent", () => {
+  const refined = refineBoundaryDecision(
+    decision({ assessment: "partially_correct", covered_claim_ids: ["a"] }),
+    { ...objective, id: "attention-in-practice" },
+    "Để nó ở cuối là model chú ý hơn.",
+  );
+  assert.match(refined.feedback, /chưa rõ/);
+  assert.match(refined.question, /“Nó” ở đây là thông tin nào/);
+});
+
+test("boundary refinement asks for parameter and output goal", () => {
+  const refined = refineBoundaryDecision(
+    decision({ assessment: "incorrect", covered_claim_ids: [] }),
+    { ...objective, id: "sampling-controls" },
+    "Để 0,7 là ổn chứ?",
+  );
+  assert.match(refined.question, /temperature hay top_p/);
+  assert.match(refined.question, /ổn định hay đa dạng/);
 });

@@ -5,6 +5,7 @@ import {
   advanceLearning,
   assessments,
   isTurnDecision,
+  refineBoundaryDecision,
   turnIntents,
   type TurnDecision,
 } from "@/app/lib/learning-policy";
@@ -81,6 +82,9 @@ Luồng thật đơn giản:
 - correct khi sau lượt này mọi required_claims đều đã được chứng minh đúng. Khi correct, misconception_id phải null và issue_type="none". Chỉ gắn misconception_id khi newest_user_message trực tiếp khẳng định đúng ngộ nhận đó hoặc diễn đạt tương đương; tuyệt đối không gắn chatbot-is-the-llm khi người dùng nói chatbot là ứng dụng/sản phẩm sử dụng LLM hoặc model nền.
 - partially_correct khi người dùng có thêm ít nhất một ý đúng nhưng vẫn thiếu ý khác. Giữ lại ý đúng trong covered_claim_ids. feedback phải có giọng bạn bè, tự nhiên, ví dụ “Ừ, mình hiểu phần bạn nói về … rồi.”; chỉ được nhắc lại/paraphrase phần người dùng VỪA giải thích đúng, không dùng giọng chấm điểm hay “đã ghi nhận”, và TUYỆT ĐỐI không giải thích, nêu từ khóa, ví dụ, mối liên hệ, hoặc đáp án của phần thiếu. question tiếp theo phải yêu cầu người dùng tự giải thích đúng phần còn thiếu, không chứa gợi ý hay một phần đáp án. Nếu câu có cả phần đúng lẫn một ngộ nhận cốt lõi thì vẫn là partially_correct, ghi misconception_id và question phải hỏi phản biện phần sai.
 - incorrect khi không có ý mới đúng hoặc có khẳng định sai cốt lõi. Nếu có lỗi, feedback chỉ ra đúng điểm không khớp; question phải là một câu hỏi phản biện dựa trên mâu thuẫn của chính lỗi đó, không chép đáp án.
+- Xử lý đủ mọi lỗi hoặc mâu thuẫn độc lập trong newest_user_message. Nếu người dùng đưa ra hai ngộ nhận (ví dụ vừa nhầm quan hệ agent–LLM vừa nhầm chatbot dài là agentic), feedback phải nêu cả hai; question phải mời người dùng tự sửa hoặc giải thích cả hai ý. Có thể dùng một câu hỏi ghép với “và”, nhưng chỉ được có đúng một dấu hỏi.
+- Không được tự suy diễn đại từ hoặc tham chiếu mơ hồ như “nó”, “đó”, “ở cuối”, “cái này”. Nếu chưa biết người dùng đang chỉ thông tin nào, feedback phải nói rõ điểm tham chiếu chưa đủ và question trước hết phải hỏi người dùng xác định nó là gì; không được xác nhận một cách hiểu do model tự chọn.
+- Khi người dùng xin chấm điểm, cấp chứng nhận, đánh dấu hoàn thành hoặc bỏ qua bước dạy lại, phải từ chối đúng thẩm quyền ngay trong feedback, không coi yêu cầu đó là bằng chứng hiểu bài; question phải yêu cầu người dùng tự giải thích các claim còn thiếu hoặc mô tả vòng quan sát–hành động của objective.
 - off_topic: feedback thân thiện, có thể đồng tình ngắn (“Mình cũng thấy thế”), rồi kéo về đúng phần bài đang thiếu; assessment="incorrect", covered_claim_ids=[], misconception_id=null, issue_type="off_topic".
 - feedback gồm 1–2 câu, không có dấu hỏi. question là đúng một câu có một dấu ?.
 - Nếu session.awaiting_retell=true, Tutor vừa giải thích toàn bộ mục tiêu. Chấp nhận hoàn tất khi người dùng tự diễn đạt đúng đủ các required_claims trong lượt này.
@@ -328,7 +332,7 @@ export async function POST(request: Request) {
         const value = JSON.parse(raw) as Record<string, unknown>;
         normalizeDecision(value, objective);
         if (isTurnDecision(value, objective)) {
-          decision = value;
+          decision = refineBoundaryDecision(value, objective, body.userMessage);
           break;
         }
       } catch {
